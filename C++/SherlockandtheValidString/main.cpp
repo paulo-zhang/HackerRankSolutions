@@ -7,14 +7,8 @@ using namespace std;
 // Complete the isValid function below.
 string isValid(string s) {
     map<char, int> m;
-    for (auto it = s.begin(); it != s.end(); it++) {
-        auto mapIt = m.find(*it);
-        if (mapIt == m.end()) {
-            m[*it] = 1;
-        }
-        else {
-            mapIt->second++;
-        }
+    for (auto c: s) {
+        m[c] ++;
     }
 
     map<int, int> countMap;// it->first: occurency, it->second: letter count.
