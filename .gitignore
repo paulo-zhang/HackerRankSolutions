@@ -21,3 +21,7 @@
 /C++/LowestCommonAncestor/LowestCommonAncestor/*.user
 /C++/DeterminingDNAHealth/DeterminingDNAHealth/*.filters
 /C++/DeterminingDNAHealth/DeterminingDNAHealth/*.user
+/C++/SherlockandtheValidString/.vs/SherlockandtheValidString/v16
+/C++/SherlockandtheValidString/Debug
+*.filters
+*.user
