@@ -25,3 +25,5 @@
 /C++/SherlockandtheValidString/Debug
 *.filters
 *.user
+/C++/BalancedBrackets/.vs/BalancedBrackets/v16
+/C++/BalancedBrackets/Debug
