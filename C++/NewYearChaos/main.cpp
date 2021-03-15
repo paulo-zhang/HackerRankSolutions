@@ -9,7 +9,58 @@ vector<string> split_string(string);
 
 // Complete the minimumBribes function below.
 void minimumBribes(vector<int> q) {
-    // https://www.hackerrank.com/challenges/new-year-chaos/forum/comments/487629
+    // Bubble sort
+    vector<int> counts(q.size(), 0);
+    int totalCount = 0;
+
+    bool swapped = true;
+    for (int i = 0; swapped && i < q.size() - 1; i++) {
+        swapped = false;
+        for (size_t j = 0; j < q.size() - 1 - i; j++) {
+            if (q[j] > q[j + 1]) {
+                swapped = true;
+                counts[q[j] - 1] ++;
+                totalCount++;
+                if (counts[q[j] - 1] > 2) {
+                    cout << "Too chaotic" << endl;
+                    return;
+                }
+
+                int temp = q[j];
+                q[j] = q[j + 1];
+                q[j + 1] = temp;
+            }
+        }
+    }
+
+    cout << totalCount << endl;
+}
+
+/// <summary>
+/// Solution: https://www.hackerrank.com/challenges/new-year-chaos/forum/comments/143969
+/// Count the brided number.
+/// </summary>
+/// <param name="q"></param>
+void minimumBribes2(vector<int> q)
+{
+    int ans = 0;
+    for (int i = q.size() - 1; i >= 0; i--) {
+        if (q[i] - (i + 1) > 2) {
+            cout << "Too chaotic" << endl;
+            return;
+        }
+        for (int j = max(0, q[i] - 2); j < i; j++)
+            if (q[j] > q[i]) ans++;
+    }
+    cout << ans << endl;
+}
+
+/// <summary>
+/// Solution: https://www.hackerrank.com/challenges/new-year-chaos/forum/comments/487629
+/// Queue scenario
+/// </summary>
+/// <param name="q"></param>
+void minimumBribes1(vector<int> q) {
     int totalBribes = 0;
 
     int expectedFirst = 1;
