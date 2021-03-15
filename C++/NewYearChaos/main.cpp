@@ -9,31 +9,35 @@ vector<string> split_string(string);
 
 // Complete the minimumBribes function below.
 void minimumBribes(vector<int> q) {
-    // Bubble sort
-    vector<int> counts(q.size(), 0);
-    int totalCount = 0;
+    // https://www.hackerrank.com/challenges/new-year-chaos/forum/comments/487629
+    int totalBribes = 0;
 
-    bool swapped = true;
-    for (int i = 0; swapped && i < q.size() - 1; i++) {
-        swapped = false;
-        for (size_t j = 0; j < q.size() - 1 - i; j++) {
-            if (q[j] > q[j + 1]) {
-                swapped = true;
-                counts[q[j] - 1] ++;
-                totalCount++;
-                if (counts[q[j] - 1] > 2) {
-                    cout << "Too chaotic" << endl;
-                    return;
-                }
+    int expectedFirst = 1;
+    int expectedSecond = 2;
+    int expectedThird = 3;
 
-                int temp = q[j];
-                q[j] = q[j + 1];
-                q[j + 1] = temp;
-            }
+    for (unsigned int i = 0; i < q.size(); ++i) {
+        if (q[i] == expectedFirst) {
+            expectedFirst = expectedSecond;
+            expectedSecond = expectedThird;
+            ++expectedThird;
+        }
+        else if (q[i] == expectedSecond) {
+            ++totalBribes;
+            expectedSecond = expectedThird;
+            ++expectedThird;
+        }
+        else if (q[i] == expectedThird) {
+            totalBribes += 2;
+            ++expectedThird;
+        }
+        else {
+            cout << "Too chaotic" << endl;
+            return;
         }
     }
 
-    cout << totalCount << endl;
+    cout << totalBribes << endl;
 }
 
 int main()
