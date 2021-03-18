@@ -25,10 +25,10 @@ long arrayManipulation(int n, vector<vector<int>> queries) {
 int main()
 {
     //ofstream fout(getenv("OUTPUT_PATH"));
-    ifstream fout("input04.txt");
+    ifstream fin("input04.txt");
 
     string nm_temp;
-    getline(fout, nm_temp);
+    getline(fin, nm_temp);
 
     vector<string> nm = split_string(nm_temp);
 
@@ -41,10 +41,10 @@ int main()
         queries[i].resize(3);
 
         for (int j = 0; j < 3; j++) {
-            fout >> queries[i][j];
+            fin >> queries[i][j];
         }
 
-        fout.ignore(numeric_limits<streamsize>::max(), '\n');
+        fin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 
     long result = arrayManipulation(n, queries);
