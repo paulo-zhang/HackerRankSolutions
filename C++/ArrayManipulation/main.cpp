@@ -10,13 +10,25 @@ vector<string> split_string(string);
 
 // Complete the arrayManipulation function below.
 long arrayManipulation(int n, vector<vector<int>> queries) {
+    // Solution: https://www.hackerrank.com/challenges/crush/forum/comments/69550
     long maxVal = 0;
-    vector<long> q(n, 0);
-    for (size_t i = 0; i < queries.size(); i++) {
-        for (int j = queries[i][0] - 1; j < queries[i][1]; j++) {
-            q[j] += queries[i][2];
-            maxVal = max(maxVal, q[j]);
+    vector<long> a(n, 0);
+    for (size_t i = 0; i < queries.size(); i++)
+    {
+        int p = queries[i][0] - 1;
+        int q = queries[i][1] - 1;
+
+        a[p] += queries[i][2];
+        if (q + 1 < n) {
+            a[q + 1] -= queries[i][2];
         }
+    }
+
+    long x = 0;
+    for (size_t i = 0; i < n; i++)
+    {
+        x += a[i];
+        maxVal = max(x, maxVal);
     }
 
     return maxVal;
@@ -25,7 +37,7 @@ long arrayManipulation(int n, vector<vector<int>> queries) {
 int main()
 {
     //ofstream fout(getenv("OUTPUT_PATH"));
-    ifstream fin("input04.txt");
+    ifstream fin("input00.txt");
 
     string nm_temp;
     getline(fin, nm_temp);
