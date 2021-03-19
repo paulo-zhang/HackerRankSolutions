@@ -12,22 +12,22 @@ vector<string> split_string(string);
 long arrayManipulation(int n, vector<vector<int>> queries) {
     // Solution: https://www.hackerrank.com/challenges/crush/forum/comments/69550
     long maxVal = 0;
-    vector<long> a(n, 0);
+    vector<long> arr(n, 0);
     for (size_t i = 0; i < queries.size(); i++)
     {
-        int p = queries[i][0] - 1;
-        int q = queries[i][1] - 1;
+        int index1 = queries[i][0] - 1;
+        int index2 = queries[i][1] - 1;
 
-        a[p] += queries[i][2];
-        if (q + 1 < n) {
-            a[q + 1] -= queries[i][2];
+        arr[index1] += queries[i][2];
+        if (index2 + 1 < n) {
+            arr[index2 + 1] -= queries[i][2];
         }
     }
 
     long x = 0;
     for (size_t i = 0; i < n; i++)
     {
-        x += a[i];
+        x += arr[i];
         maxVal = max(x, maxVal);
     }
 
