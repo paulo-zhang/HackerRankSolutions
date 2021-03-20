@@ -36,6 +36,61 @@ void minimumBribes(vector<int> q) {
     cout << totalCount << endl;
 }
 
+/// <summary>
+/// Solution: https://www.hackerrank.com/challenges/new-year-chaos/forum/comments/143969
+/// Count the brided number.
+/// </summary>
+/// <param name="q"></param>
+void minimumBribes2(vector<int> q)
+{
+    int ans = 0;
+    for (int i = q.size() - 1; i >= 0; i--) {
+        if (q[i] - (i + 1) > 2) {
+            cout << "Too chaotic" << endl;
+            return;
+        }
+        for (int j = max(0, q[i] - 2); j < i; j++)
+            if (q[j] > q[i]) ans++;
+    }
+    cout << ans << endl;
+}
+
+/// <summary>
+/// Solution: https://www.hackerrank.com/challenges/new-year-chaos/forum/comments/487629
+/// Queue scenario
+/// </summary>
+/// <param name="q"></param>
+void minimumBribes1(vector<int> q) {
+    int totalBribes = 0;
+
+    int expectedFirst = 1;
+    int expectedSecond = 2;
+    int expectedThird = 3;
+
+    for (unsigned int i = 0; i < q.size(); ++i) {
+        if (q[i] == expectedFirst) {
+            expectedFirst = expectedSecond;
+            expectedSecond = expectedThird;
+            ++expectedThird;
+        }
+        else if (q[i] == expectedSecond) {
+            ++totalBribes;
+            expectedSecond = expectedThird;
+            ++expectedThird;
+        }
+        else if (q[i] == expectedThird) {
+            totalBribes += 2;
+            ++expectedThird;
+        }
+        else {
+            cout << "Too chaotic" << endl;
+            return;
+        }
+    }
+
+    cout << totalBribes << endl;
+}
+
 int main()
 {
     int t;
