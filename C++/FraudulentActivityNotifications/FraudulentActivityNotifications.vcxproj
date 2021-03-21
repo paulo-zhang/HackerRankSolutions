@@ -142,6 +142,9 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="input00.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </Text>
     <Text Include="input01.txt">
       <FileType>Text</FileType>
       <DeploymentContent>true</DeploymentContent>
