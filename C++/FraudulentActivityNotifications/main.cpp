@@ -15,25 +15,42 @@ vector<string> split_string(string);
 int activityNotifications(vector<int> expenditure, int d) {
     int totalNotifications = 0;
     int d1 = (d - 1) / 2, d2 = d / 2; // Two indexs to get the double_median.
-    vector<int> trailingNums(d); // Ordered trailing nums.
+    // vector<int> trailingNums(d); // Ordered trailing nums.
     vector<int> count(201, 0); // Use counting sort concept.
     int minValue = 201, maxValue = -1; // value range of trailingNums.
 
     for (size_t i = 0; i < expenditure.size(); i++) {
         if (i >= d) {// Ready to use the previous d elements.
+            /*
             // Counting sort previous d elements into trailingNums.
             // https://www.geeksforgeeks.org/counting-sort/
-            for (int j = minValue, n = 0; j <= maxValue && n < d; j++) {
+            for(int j = minValue, n = 0;j <= maxValue && n < d; j ++){
                 int m = count[j];
-                while (m > 0) {// Orderly copy into trailingNums.
+                while(m > 0){// Orderly copy into trailingNums.
                     trailingNums[n] = j;
-                    n++;
-                    m--;
+                    n ++;
+                    m --;
                 }
             }
             // End Counting sort previous d elements into trailingNums.
 
             int double_median = trailingNums[d1] + trailingNums[d2];
+            */
+
+            // Find double median, no need to put the number into an array, just find the trick;
+            int double_median = 0;
+            for (int j = minValue, n = 0; j <= maxValue && n < d; j++) {
+                int m = count[j];
+                if (n <= d1 && d1 < m + n) {
+                    double_median += j;
+                }
+                if (n <= d2 && d2 < m + n) {
+                    double_median += j;
+                }
+
+                n += m;
+            }
+
             if (double_median <= expenditure[i]) { // One notification.
                 totalNotifications++;
             }
@@ -63,7 +80,7 @@ int activityNotifications(vector<int> expenditure, int d) {
 int main()
 {
     // ofstream fout(getenv("OUTPUT_PATH"));
-    ifstream fin("input00.txt");
+    ifstream fin("input01.txt");
 
     string nd_temp;
     getline(fin, nd_temp);
