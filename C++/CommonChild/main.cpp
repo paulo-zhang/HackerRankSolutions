@@ -5,9 +5,12 @@
 
 using namespace std;
 
+// https://www.programiz.com/dsa/longest-common-subsequence
 // Complete the commonChild function below.
 int commonChild(string s1, string s2) {
     int lcs = 0;
+    // We can actually do this with table(2), since we don't need to trace the subsequence string.
+    // https://www.geeksforgeeks.org/longest-common-substring-dp-29/
     vector<vector<int>> table(s1.size() + 1);
 
     for (size_t i = 0; i <= s1.size(); i++) {
@@ -21,7 +24,7 @@ int commonChild(string s1, string s2) {
                 lcs = max(table[i][j], lcs);// Is this the biggest?
             }
             else {
-                table[i][j] += max(table[i][j - 1], table[i - 1][j]); // Not a common child element, so the lcs doesn't change.
+                table[i][j] = max(table[i][j - 1], table[i - 1][j]); // Not a common child element, so the lcs doesn't change.
             }
         }
     }
