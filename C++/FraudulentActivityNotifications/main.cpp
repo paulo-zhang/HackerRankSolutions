@@ -14,64 +14,37 @@ vector<string> split_string(string);
 // Complete the activityNotifications function below.
 int activityNotifications(vector<int> expenditure, int d) {
     int totalNotifications = 0;
-    int d1 = (d - 1) / 2, d2 = d / 2; // Two indexs to get the double_median.
-    // vector<int> trailingNums(d); // Ordered trailing nums.
     vector<int> count(201, 0); // Use counting sort concept.
-    int minValue = 201, maxValue = -1; // value range of trailingNums.
 
     for (size_t i = 0; i < expenditure.size(); i++) {
         if (i >= d) {// Ready to use the previous d elements.
-            /*
-            // Counting sort previous d elements into trailingNums.
-            // https://www.geeksforgeeks.org/counting-sort/
-            for(int j = minValue, n = 0;j <= maxValue && n < d; j ++){
-                int m = count[j];
-                while(m > 0){// Orderly copy into trailingNums.
-                    trailingNums[n] = j;
-                    n ++;
-                    m --;
-                }
-            }
-            // End Counting sort previous d elements into trailingNums.
-
-            int double_median = trailingNums[d1] + trailingNums[d2];
-            */
-
-            // Find double median, no need to put the number into an array, just find the trick;
+            // Find double median;
             int double_median = 0;
-            for (int j = minValue, n = 0; j <= maxValue && n < d; j++) {
-                int m = count[j];
-                if (n <= d1 && d1 < m + n) {
-                    double_median += j;
+            int p = 0;
+            for (int j = 0; j <= count.size(); j++) {
+                if (count[j] == 0)continue;
+                p += count[j];
+                if (p * 2 == d) {
+                    int n = j;
+                    while (count[++n] == 0);
+                    double_median = j + n;
+                    break;
                 }
-                if (n <= d2 && d2 < m + n) {
-                    double_median += j;
+                else if (p * 2 > d) {
+                    double_median = 2 * j;
+                    break;
                 }
-
-                n += m;
             }
 
             if (double_median <= expenditure[i]) { // One notification.
                 totalNotifications++;
             }
 
-            int oldestIndex = i - d;
-            count[expenditure[oldestIndex]] --;// Remove the oldest from next sort.
-            if (count[expenditure[oldestIndex]] == 0) {
-                if (expenditure[oldestIndex] == minValue) { // minValue changed.
-                    while (minValue < expenditure[i] && count[++minValue] == 0);
-                }
-
-                if (expenditure[oldestIndex] == maxValue) { // maxValue changed.
-                    while (maxValue > expenditure[i] && count[--maxValue] == 0);
-                }
-            }
+            count[expenditure[i - d]] --;// Remove the oldest from next sort.
         }
 
         // Add element for next counting sort.
         count[expenditure[i]] ++;
-        minValue = min(minValue, expenditure[i]);
-        maxValue = max(maxValue, expenditure[i]);
     }
 
     return totalNotifications;
