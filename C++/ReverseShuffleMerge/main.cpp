@@ -2,57 +2,71 @@
 #include <algorithm>
 #include <vector>
 #include <iostream>
+#include <map>
 
 using namespace std;
 
-string getMinString(string& A1, int index, string& s, int pos, vector<bool>& selected, string result) {
-    pos = s.find(A1[index], pos);
-    if (pos == string::npos || A1.size() - result.size() > s.size() - pos) {
-        return result;
-    };
-
-    selected[index] = true;
-    result += A1[index];
-    pos++;
-
-    if (result.size() == A1.size()) {
-        return result;
-    }
-
-    for (int i = 0; i < A1.size(); i++) {
-        if (selected[i]) continue;
-
-        string str = getMinString(A1, i, s, pos, selected, result);
-        if (str.size() == A1.size()) {
-            return str;
-        }
-    }
-
-    selected[index] = false;
-    return result.erase(result.size() - 1, 1);
-}
-
 // Complete the reverseShuffleMerge function below.
 string reverseShuffleMerge(string s) {
-    string copy = s;
-    sort(copy.begin(), copy.end());
-    string A1;
-    for (int i = 0; i < copy.size(); i += 2) {
-        A1 += copy[i];
+    map<char, int> counts;
+    string result;
+
+    for (char c : s) {
+        counts[c] ++;
     }
 
-    reverse(s.begin(), s.end());
+    for (auto it : counts) {
+        counts[it.first] = it.second / 2;
+    }
 
-    vector<bool> selected(A1.size(), false);
+    int lastIndex = s.size();
+    map<char, int> passedCounts, AddedCounts;
+    for (int i = s.size() - 1; i >= 0 && result.size() < s.size() / 2; i--) {
+        char c = s[i];
 
-    for (int i = 0; i < A1.size(); i++) {
-        string result = getMinString(A1, i, s, 0, selected, "");
-        if (result.size() == A1.size()) {
-            return result;
+        passedCounts[c] ++;
+        if (counts[c] == AddedCounts[c]) {
+            continue;// Ignore
+        }
+
+        if (counts[c] < passedCounts[c] - AddedCounts[c]) {// Cannot afford to miss this one.
+            char smallest;
+            do {
+                smallest = 'z' + 1;
+                // Find the smallest wanted character
+                int n = i;
+                for (int j = lastIndex - 1; j >= i; j--) {
+                    if (s[j] < smallest && AddedCounts[s[j]] < counts[s[j]]) {
+                        smallest = s[j];
+                        n = j;
+                    }
+                }
+
+                cout << i << "," << n << "-" << smallest << "; ";
+                result += smallest;
+                AddedCounts[smallest] ++;
+                lastIndex = n;
+            } while (smallest != c);
+        }
+        else {
+            char smallest = 0;
+            for (auto it : counts) {
+                if (it.second > AddedCounts[it.first]) {
+                    // smallest wanted.
+                    smallest = it.first;
+                    break;
+                }
+            }
+
+            if (smallest == c) {
+                result += smallest;
+                AddedCounts[smallest] ++;
+                lastIndex = i;
+            }
         }
     }
 
-    return "No found.";
+    return result;
 }
 
 int main()
