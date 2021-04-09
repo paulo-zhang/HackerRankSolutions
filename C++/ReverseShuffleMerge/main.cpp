@@ -6,6 +6,7 @@
 
 using namespace std;
 
+// Implement base on https://www.hackerrank.com/challenges/reverse-shuffle-merge/forum/comments/77705
 // Complete the reverseShuffleMerge function below.
 string reverseShuffleMerge(string s) {
     map<char, int> counts;
