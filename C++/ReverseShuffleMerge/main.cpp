@@ -43,7 +43,6 @@ string reverseShuffleMerge(string s) {
                     }
                 }
 
-                cout << i << "," << n << "-" << smallest << "; ";
                 result += smallest;
                 AddedCounts[smallest] ++;
                 lastIndex = n;
