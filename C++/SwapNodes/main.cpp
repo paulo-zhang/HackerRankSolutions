@@ -14,8 +14,19 @@ void traverseTree(vector<int>& heap, int i, vector<int>& result) {
     traverseTree(heap, 2 * i + 2, result);// Left
 }
 
+void print_indexes(vector<vector<int>>& indexes)
+{
+    for_each(indexes.begin(), indexes.end(), [&](auto node) {
+            for(auto n : node){
+                cout << n << " ";
+            }
+            cout << endl;
+        });
+}
+
 vector<int> traverseSwap(vector<vector<int>> &indexes, int k)
 {
+    // Problem: only swap the nodes instead of subtrees.
     vector<int> heap(2048, -1);
     heap[0] = 1;
     int heap_index = 0;
@@ -70,17 +81,18 @@ vector<int> traverseSwap(vector<vector<int>> &indexes, int k)
 /*
  * Complete the swapNodes function below.
  */
-vector<vector<int>> swapNodes(vector<vector<int>> indexes, vector<int> queries) {
+vector<vector<int>> swapNodes(vector<vector<int>> &indexes, vector<int> queries) {
     vector<vector<int>> result;
     for (auto k : queries) {
         auto res = traverseSwap(indexes, k);
+        print_indexes(indexes);
         result.push_back(res);
     }
 
     return result;
 }
 
-int main()
+int main1()
 {
     // ofstream fout(getenv("OUTPUT_PATH"));
 
