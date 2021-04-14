@@ -34,7 +34,7 @@ void swap(int level = 1, int node = 1) {
     swap(level + 1, rightNode[node]);
 }
 
-int main() {
+int main1() {
     int count;
     cin >> count;
     leftNode.push_back(1);
