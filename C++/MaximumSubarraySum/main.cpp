@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <set>
 
 using namespace std;
 
@@ -13,8 +14,32 @@ long maximumSum(vector<long> a, long m) {
     // (a+b)%M=(a%M+b%M)%M  --- 1
     // (a−b)%M=(a%M−b%M)%M  --- 2
     // sumModular[i,j]=(prefix[j]−prefix[i−1]+M)%M  --3
-    // If prefix[j] < prefix[i], we have: (prefix[i]−prefix[j]+M)%M=prefix[i]−prefix[j]≤prefix[i]
-    return 0;
+    // If prefix[j] < prefix[i], we have: (prefix[i]−prefix[j]+M)%M=prefix[i]−prefix[j]<=prefix[i]
+    long max_sum = 0;
+
+    vector<long> prefix(a.size());
+    set<long> ordered_prefix;
+    prefix[0] = a[0] % m;
+    ordered_prefix.insert(prefix[0]);
+
+    for (int i = 1; i < a.size(); i++) {
+        prefix[i] = (prefix[i - 1] + a[i]) % m;
+        // This maybe the bigger one.
+        max_sum = max(max_sum, prefix[i]);
+
+        // Find the first prefix that is bigger than current one, because that's the only way to make a bigger sumModular[i,j].
+        for (long p : ordered_prefix) {
+            if (p > prefix[i]) {
+                // Create a bigger module between prefixs[i] and p.
+                max_sum = max(max_sum, (prefix[i] - p + m) % m);
+                break;
+            }
+        }
+
+        ordered_prefix.insert(prefix[i]);
+    }
+
+    return max_sum;
 }
 
 int main()
