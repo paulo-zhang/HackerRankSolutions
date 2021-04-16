@@ -5,94 +5,43 @@
 
 using namespace std;
 
+void traverseTree(vector<vector<int>>& indexes, int node, vector<int>& result) {
+    if (node == -1) return;
 
-void traverseTree(vector<int>& heap, int i, vector<int>& result) {
-    if (i >= heap.size() || heap[i] == -1) return;
-
-    traverseTree(heap, 2 * i + 1, result);// Left
-    result.push_back(heap[i]);// In order
-    traverseTree(heap, 2 * i + 2, result);// Left
+    traverseTree(indexes, indexes[node - 1][0], result); // Left
+    result.push_back(node);// In order
+    traverseTree(indexes, indexes[node - 1][1], result); // Right
 }
 
-void print_indexes(vector<vector<int>>& indexes)
-{
-    for_each(indexes.begin(), indexes.end(), [&](auto node) {
-            for(auto n : node){
-                cout << n << " ";
-            }
-            cout << endl;
-        });
-}
+void swap(vector<vector<int>>& indexes, int level, int k, int node) {
+    if (node == -1) return;
 
-vector<int> traverseSwap(vector<vector<int>> &indexes, int k)
-{
-    // Problem: only swap the nodes instead of subtrees.
-    vector<int> heap(2048, -1);
-    heap[0] = 1;
-    int heap_index = 0;
-    vector<int> result;
-
-    int level = 0;
-    queue<int> parents;
-    parents.push(1);
-    int n = 1;
-
-    for (int i = 0; i < indexes.size() && !parents.empty();)
-    {
-        level++;
-        vector<int> children;
-        while (!parents.empty()) {
-            if (n * k == level) {// Swap
-                swap(indexes[i][0], indexes[i][1]);
-            }
-
-            if (indexes[i][0] != -1) {
-                children.push_back(indexes[i][0]);
-            }
-            if (indexes[i][1] != -1) {
-                children.push_back(indexes[i][1]);
-            }
-
-            int p = parents.front();
-            parents.pop();
-            // Construct a complete tree
-            while (heap[heap_index] != p) {
-                heap_index++;
-            }
-            heap[2 * heap_index + 1] = indexes[i][0]; // Left leafe
-            heap[2 * heap_index + 2] = indexes[i][1]; // Right leafe
-            
-            i++;
-        }
-
-        if (n * k == level) {
-            n++;
-        }
-
-        // Children become parents.
-        for_each(children.begin(), children.end(), [&](auto c) {parents.push(c); });
+    if (level % k == 0) {
+        swap(indexes[node - 1][0], indexes[node - 1][1]);
     }
 
-    traverseTree(heap, 0, result);
-
-    return result;
+    swap(indexes, level + 1, k, indexes[node - 1][0]);// left
+    swap(indexes, level + 1, k, indexes[node - 1][1]); // right
 }
-
 /*
  * Complete the swapNodes function below.
  */
-vector<vector<int>> swapNodes(vector<vector<int>> &indexes, vector<int> queries) {
-    vector<vector<int>> result;
-    for (auto k : queries) {
-        auto res = traverseSwap(indexes, k);
-        print_indexes(indexes);
-        result.push_back(res);
+vector<vector<int>> swapNodes(vector<vector<int>> indexes, vector<int> queries) {
+    vector<vector<int>> results;
+
+    for (int i = 0; i < queries.size(); i++) {
+        int k = queries[i];
+        swap(indexes, 1, k, 1);
+
+        vector<int> result;
+        traverseTree(indexes, 1, result);
+        results.push_back(result);
     }
 
-    return result;
+    return results;
 }
 
-int main1()
+int main()
 {
     // ofstream fout(getenv("OUTPUT_PATH"));
 
