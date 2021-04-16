@@ -19,30 +19,30 @@ long maximumSum(vector<long> a, long m) {
     
     vector<unsigned long> prefix(a.size());
     set<unsigned long> ordered_prefix;
-    prefix[0] = a[0] % m;
-    ordered_prefix.insert(prefix[0]);
-    unsigned long max_sum = prefix[0];
+    unsigned long pre_prefix = a[0] % m;
+    unsigned long max_sum = pre_prefix;
+    ordered_prefix.insert(pre_prefix);
 
     for (int i = 1; i < a.size(); i++) {
         /*Usually, a great many problems related to "subarray computation" could be solved with prefix array, which saves time for repeating computation.
             Define:
         prefix[n] = (a[0] + a[1] + ... + a[n]) % M*/
-        prefix[i] = (prefix[i - 1] + a[i] % m) % m;
+        pre_prefix = (pre_prefix + a[i]) % m;
         // This maybe the bigger one.
-        max_sum = max(max_sum, prefix[i]);
+        max_sum = max(max_sum, pre_prefix);
 
         // Find the first prefix that is bigger than current one, because that's the only way to make a bigger sumModular[i,j].
-        auto it = ordered_prefix.upper_bound(prefix[i]); // The use of upper_bound
-        if (it != ordered_prefix.end() && *it == prefix[i]) {
+        auto it = ordered_prefix.upper_bound(pre_prefix); // The use of upper_bound
+        if (it != ordered_prefix.end() && *it == pre_prefix) {
             it++; // Locate to the first bigger element.
         }
         else {
-            ordered_prefix.insert(it, prefix[i]); // insert with hint of it.
+            ordered_prefix.insert(it, pre_prefix); // insert with hint of it.
         }
 
         if (it != ordered_prefix.end()) {
             // Potential bigger sumModular[i,j].
-            max_sum = max(max_sum, (prefix[i] - *it + m) % m);
+            max_sum = max(max_sum, (pre_prefix - *it + m) % m);
         }
     }
 
