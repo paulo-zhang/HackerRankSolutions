@@ -33,17 +33,13 @@ long maximumSum(vector<long> a, long m) {
 
         // Find the first prefix that is bigger than current one, because that's the only way to make a bigger sumModular[i,j].
         auto it = ordered_prefix.upper_bound(pre_prefix); // The use of upper_bound
-        if (it != ordered_prefix.end() && *it == pre_prefix) {
-            it++; // Locate to the first bigger element.
-        }
-        else {
-            ordered_prefix.insert(it, pre_prefix); // insert with hint of it.
-        }
 
         if (it != ordered_prefix.end()) {
             // Potential bigger sumModular[i,j].
             max_sum = max(max_sum, (pre_prefix - *it + m) % m);
         }
+
+        ordered_prefix.insert(it, pre_prefix); // insert with hint of it.
     }
 
     return max_sum;
