@@ -14,7 +14,7 @@ long minimumPasses(long long m, long long w, long long p, long long n) {
     long passes = 0, min_pass = LONG_MAX;
 
     do {
-        // Either by all w/m all buy none.
+        // The problem can be reduced to either by all w/m or buy none.
         // (m > LLONG_MAX / w): Purely to deal with data overflow.
         long non_invest_steps = (m >= LONG_MAX / w) ? 1 : (n - products + w * m - 1) / (w * m); // If we don't buy any more w/m, how many more steps needed to fulfill the requirement?
         min_pass = min(min_pass, passes + non_invest_steps); // Can we use fewer steps to solve the problem without further calculation? Market down the minimum steps.
@@ -22,7 +22,7 @@ long minimumPasses(long long m, long long w, long long p, long long n) {
         buy_none_steps = min(buy_none_steps, non_invest_steps); // Fewer steps is chosen to meet the goal.
         if (buy_none_steps <= 0) {
             // Invest plan
-            long wm = products / p;
+            long wm = products / p; // Buy all number.
             products = products % p;
             buy_none_steps = 1;
 
