@@ -29,11 +29,11 @@ int maxSubsetSum(vector<int> arr) {
     int pre1, pre2;
 
     pre1 = max(arr[0], 0);
-    pre2 = max(arr[0], arr[1]);
+    pre2 = max(arr[0], arr[1]); // pre2 = max(pre1, arr[1]); When length of substring could be 0.
     for (int i = 2; i < arr.size(); i++) {
         int v1 = arr[i] + pre1;
         pre1 = pre2;
-        pre2 = max(arr[i], max(v1, pre2));
+        pre2 = max(arr[i], max(v1, pre2)); // pre2 = max(v1, pre2); When length of substring could be 0.
     }
 
     return pre2;
