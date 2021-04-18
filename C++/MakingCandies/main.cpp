@@ -10,46 +10,43 @@ vector<string> split_string(string);
 
 // Complete the minimumPasses function below.
 long minimumPasses(long long m, long long w, long long p, long long n) {
-    long long products = 0;
-    long long passes = 0, min_pass = LLONG_MAX;
-    
+    long products = 0;
+    long passes = 0, min_pass = LONG_MAX;
+
     do {
-        // https://www.hackerrank.com/challenges/making-candies/forum/comments/516277?h_l=interview&playlist_slugs%5B%5D=interview-preparation-kit&playlist_slugs%5B%5D=search
+        // Either by all w/m all buy none.
         // (m > LLONG_MAX / w): Purely to deal with data overflow.
-        long long gaps = (m > LLONG_MAX / w) ? 1 : (n - products) / (w * m); // If we don't buy any more power, how many more steps needed?
-        long long steps = (m > LLONG_MAX / w) ? 1 : (p - products) / (w * m); // How many steps to be able to buy more power?
-        steps = min(steps, gaps);
-        if (steps <= 0) {
+        long non_invest_steps = (m >= LONG_MAX / w) ? 1 : (n - products + w * m - 1) / (w * m); // If we don't buy any more w/m, how many more steps needed to fulfill the requirement?
+        min_pass = min(min_pass, passes + non_invest_steps); // Can we use fewer steps to solve the problem without further calculation? Market down the minimum steps.
+        long buy_none_steps = (m >= LONG_MAX / w) ? 1 : (p - products) / (w * m); // How many steps before being able to buy more w/m?
+        buy_none_steps = min(buy_none_steps, non_invest_steps); // Fewer steps is chosen to meet the goal.
+        if (buy_none_steps <= 0) {
             // Invest plan
-            long more_power = products / p;
+            long wm = products / p;
             products = products % p;
-            steps = 1;
+            buy_none_steps = 1;
 
             // Invest
-            if (m >= w + more_power) {
-                w += more_power;
+            if (m >= w + wm) {
+                w += wm;
             }
-            else if (w >= m + more_power) {
-                m += more_power;
+            else if (w >= m + wm) {
+                m += wm;
             }
             else {
-                long total = m + w + more_power;
+                long total = m + w + wm;
                 m = total / 2;
                 w = total - m;
             }
         }
 
-        passes += steps;
-        if (steps * m > LLONG_MAX / w) { // Purely to deal with data overflow
+        passes += buy_none_steps;
+        if (buy_none_steps * m >= LONG_MAX / w) { // Purely to deal with data overflow
             break;
         }
 
         // Build product.
-        products += m * w * steps;
-
-        gaps = (n - products + w * m - 1) / (w * m); // If we don't buy any more power, how many more steps needed?
-        min_pass = min(min_pass, passes + gaps);
-        // cout << passes << "-" << min_pass << ":" << w << "*" << m << "=" << products << endl;
+        products += m * w * buy_none_steps;
     } while (products < n);
 
     return min(passes, min_pass);
