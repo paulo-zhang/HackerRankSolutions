@@ -31,3 +31,5 @@
 /C++/GameofTwoStacks/.vs/GameofTwoStacks/v16
 .vs
 Debug
+build
+.vscode
