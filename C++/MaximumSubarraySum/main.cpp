@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <set>
+#include <fstream>
 
 using namespace std;
 
@@ -15,28 +16,30 @@ long maximumSum(vector<long> a, long m) {
     // (a−b)%M=(a%M−b%M)%M  --- 2
     // sumModular[i,j]=(prefix[j]−prefix[i−1]+M)%M  --3
     // If prefix[j] < prefix[i], we have: (prefix[i]−prefix[j]+M)%M=prefix[i]−prefix[j]<=prefix[i]
-    long max_sum = 0;
-
-    vector<long> prefix(a.size());
-    set<long> ordered_prefix;
-    prefix[0] = a[0] % m;
-    ordered_prefix.insert(prefix[0]);
+    
+    vector<unsigned long> prefix(a.size());
+    set<unsigned long> ordered_prefix;
+    unsigned long pre_prefix = a[0] % m;
+    unsigned long max_sum = pre_prefix;
+    ordered_prefix.insert(pre_prefix);
 
     for (int i = 1; i < a.size(); i++) {
-        prefix[i] = (prefix[i - 1] + a[i]) % m;
+        /*Usually, a great many problems related to "subarray computation" could be solved with prefix array, which saves time for repeating computation.
+            Define:
+        prefix[n] = (a[0] + a[1] + ... + a[n]) % M*/
+        pre_prefix = (pre_prefix + a[i]) % m;
         // This maybe the bigger one.
-        max_sum = max(max_sum, prefix[i]);
+        max_sum = max(max_sum, pre_prefix);
 
         // Find the first prefix that is bigger than current one, because that's the only way to make a bigger sumModular[i,j].
-        for (long p : ordered_prefix) {
-            if (p > prefix[i]) {
-                // Create a bigger module between prefixs[i] and p.
-                max_sum = max(max_sum, (prefix[i] - p + m) % m);
-                break;
-            }
+        auto it = ordered_prefix.upper_bound(pre_prefix); // The use of upper_bound
+
+        if (it != ordered_prefix.end()) {
+            // Potential bigger sumModular[i,j].
+            max_sum = max(max_sum, (pre_prefix - *it + m) % m);
         }
 
-        ordered_prefix.insert(prefix[i]);
+        ordered_prefix.insert(it, pre_prefix); // insert with hint of it.
     }
 
     return max_sum;
@@ -45,14 +48,16 @@ long maximumSum(vector<long> a, long m) {
 int main()
 {
     // ofstream fout(getenv("OUTPUT_PATH"));
+    ifstream fin("input01.txt");
+    ofstream fout("output.txt");
 
     int q;
-    cin >> q;
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    fin >> q;
+    fin.ignore(numeric_limits<streamsize>::max(), '\n');
 
     for (int q_itr = 0; q_itr < q; q_itr++) {
         string nm_temp;
-        getline(cin, nm_temp);
+        getline(fin, nm_temp);
 
         vector<string> nm = split_string(nm_temp);
 
@@ -61,7 +66,7 @@ int main()
         long m = stol(nm[1]);
 
         string a_temp_temp;
-        getline(cin, a_temp_temp);
+        getline(fin, a_temp_temp);
 
         vector<string> a_temp = split_string(a_temp_temp);
 
@@ -75,10 +80,10 @@ int main()
 
         long result = maximumSum(a, m);
 
-        cout << result << "\n";
+        fout << result << "\n";
     }
 
-    // fout.close();
+    fout.close();
 
     return 0;
 }

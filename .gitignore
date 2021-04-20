@@ -31,5 +31,6 @@
 /C++/GameofTwoStacks/.vs/GameofTwoStacks/v16
 .vs
 Debug
+/C++/MaximumSubarraySum/output.txt
 build
 .vscode
