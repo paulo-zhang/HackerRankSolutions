@@ -8,52 +8,29 @@ using namespace std;
 
 // Complete the abbreviation function below.
 string abbreviation(string a, string b) {
-    a += 'z' + 1;
-    b += 'z' + 1;
-    vector<int> matches(b.size());
-
-    int a_start = 0;
-    for (int i = 0; i < b.size(); i++) {
-        int j = a_start;
-        for (; j < a.size(); j++) {
-            if (a[j] == b[i] + 'a' - 'A' || a[j] == b[i]) {
-                matches[i] = j;
-                a_start = j + 1;
-                // cout << "match: " << i << "-" << j << ", ";
-                break;
+    vector<vector<bool>> dp(b.size() + 1, vector<bool>(a.size() + 1, false));
+    dp[0][0] = true;
+    for (int i = 0; i <= b.size(); i++) {
+        for (int j = 1; j <= a.size(); j++) {
+            if (i == 0) {
+                dp[i][j] = a[j - 1] >= 'a' && dp[i][j - 1];
             }
-            else if (a[j] < 'a') {
-                // Not matched uppercase.
-                int k = i - 1;
-                while (k >= 0)
-                {
-                    if (a[matches[k]] < 'a') {
-                        j = matches[k];
-                    }
-                    else if (a[j] == b[k]) {
-                        break;
-                    }
-
-                    k--;
+            else {
+                if (a[j - 1] == b[i - 1]) {
+                    dp[i][j] = dp[i - 1][j - 1];
                 }
-
-                if (k < 0) {
-                    return "NO";
+                else if (a[j - 1] == b[i - 1] + 'a' - 'A') {
+                    dp[i][j] = dp[i - 1][j - 1] || dp[i][j - 1];
                 }
-
-                i = k; // back to k.
-                matches[i] = j;
-                a_start = j + 1;
-                break;
+                else if (a[j - 1] >= 'a') {
+                    dp[i][j] = dp[i][j - 1];
+                }
+                // else a[j - 1] < 'a', default value is false
             }
-        }
-
-        if (j >= a.size()) {
-            return "NO";
         }
     }
 
-    return "YES";
+    return dp[b.size()][a.size()] ? "YES" : "NO";
 }
 
 int main()
