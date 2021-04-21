@@ -1,43 +1,58 @@
-#include <bits/stdc++.h>
+#include <string>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <fstream>
 
 using namespace std;
 
 // Complete the abbreviation function below.
 string abbreviation(string a, string b) {
-    int a_start = 0;
     a += 'z' + 1;
     b += 'z' + 1;
-    
-    for(int i = 0;i < b.size();i ++){
-        bool matched = false;
-        for(int j = a_start;j < a.size(); j++){
-            if(!matched && (a[j] == b[i] + 'a' - 'A' || a[j] == b[i])){
+    vector<int> matches(b.size());
+
+    int a_start = 0;
+    for (int i = 0; i < b.size(); i++) {
+        int j = a_start;
+        for (; j < a.size(); j++) {
+            if (a[j] == b[i] + 'a' - 'A' || a[j] == b[i]) {
+                matches[i] = j;
                 a_start = j + 1;
                 // cout << "match: " << i << "-" << j << ", ";
-                matched =true;
                 break;
             }
-            else if(a[j] < 'a'){
+            else if (a[j] < 'a') {
                 // Not matched uppercase.
                 int k = i - 1;
-                while(k >= 0 && a[j] != b[k]){k--;}
-                
-                if(k < 0){
+                while (k >= 0)
+                {
+                    if (a[matches[k]] < 'a') {
+                        j = matches[k];
+                    }
+                    else if (a[j] == b[k]) {
+                        break;
+                    }
+
+                    k--;
+                }
+
+                if (k < 0) {
                     return "NO";
                 }
 
-                a_start = j + 1;
                 i = k; // back to k.
-                matched = true;
+                matches[i] = j;
+                a_start = j + 1;
                 break;
             }
         }
-        
-        if(!matched){
+
+        if (j >= a.size()) {
             return "NO";
         }
     }
-    
+
     return "YES";
 }
 
