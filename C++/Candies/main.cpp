@@ -4,38 +4,25 @@ using namespace std;
 
 // Complete the candies function below.
 long candies(int n, vector<int> arr) {
-    long candy_num;
-    vector<int> dis(arr.size(), 0);
-    dis[0] = 1;
-    candy_num = 1;
-    
-    int desc_index = -2;
-    for(int i = 1; i < arr.size(); i ++){
+    vector<int> dis(arr.size(), 1);
+    for(int i = 1;i < arr.size();i ++){
         if(arr[i] > arr[i - 1]){
             dis[i] = dis[i - 1] + 1;
-            desc_index = -2;
-            candy_num += dis[i];
-        }
-        else {
-            if(desc_index == -2){
-                desc_index = i - 1;
-            }
-            
-            if(desc_index == 0 || i - desc_index == dis[desc_index] && arr[desc_index] != arr[desc_index + 1]){
-                desc_index --;
-            }
-            
-            dis[i] = 1;
-            if(arr[i] == arr[i - 1]){
-                candy_num += 1;
-                desc_index = i - 1;
-            }
-            else{
-                candy_num += i - desc_index;
-            }
         }
     }
-    cout << "\n";
+    
+    long candy_num = dis[arr.size() - 1];
+    for(int i = arr.size() - 2;i >= 0;i --){
+        if(arr[i] > arr[i + 1]){
+            int num = dis[i + 1] + 1;
+            if(num > dis[i]){
+                dis[i] = num;
+            }
+        }
+        
+        candy_num += dis[i];
+    }
+    
     return candy_num;
 }
 
