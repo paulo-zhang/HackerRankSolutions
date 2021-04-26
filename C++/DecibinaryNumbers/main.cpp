@@ -27,7 +27,7 @@ void print_pattern(){
         }
 
         for(int j = i * 10;j < 10 * (i + 1);j ++){
-            cout << right << setw(4) << Decibinary2Decimal(j) << " ";
+            cout << right << setw(4) << j << "-" << left << setw(4) << Decibinary2Decimal(j) << " ";
         }
 
         cout << "\n";
@@ -53,12 +53,11 @@ long decibinaryNumbers(long x) {
     long count = 0;
     // The count of a decmial n in metrix i is decimal_count[n - 4i].
     while(n < x){
-        for(int i = 0; n - 4 * i >= 0; i++){ // Go through the metrix to count.
-            int index = n - 4 * i;
+        for(int k = 0; n - 4 * k >= 0; k++){ // Go through the metrix to count.
+            int index = n - 4 * k;
             
             long temp = decimal_count[index] + count;
             if(temp >= x){// Found it.
-                long result = i * 100;
                 // Find the exact position
                 int m = x - count;
                 for(int i = 0;i < 10;i ++){
@@ -66,7 +65,7 @@ long decibinaryNumbers(long x) {
                         if(Decibinary2Decimal(j) == index){
                             m --;
                             if(m == 0){
-                                return result + j;
+                                return k * 100 + j;
                             }
                         }
                     }
@@ -87,7 +86,7 @@ int main()
 {
     ofstream fout("output.txt");
 
-    // print_pattern();
+    print_pattern();
 
     string q_temp;
     getline(cin, q_temp);
