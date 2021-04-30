@@ -3,7 +3,8 @@
 using namespace std;
 
 vector<string> split_string(string);
-
+// Largest Rectangle area problem:
+// https://www.geeksforgeeks.org/largest-rectangle-under-histogram/
 // Complete the riddle function below.
 vector<long> riddle(vector<long> arr) {
     // complete this function
