@@ -8,39 +8,39 @@ vector<string> split_string(string);
 // Complete the riddle function below.
 vector<long> riddle(vector<long> arr) {
     // complete this function
-    vector<long> result(arr.size(), 0);
-    int n = 0;
-    long min_value = arr[0], all_min = false;
-    while(n < arr.size()){
-            result[n] = arr[0];
-            for(int i = 1;!all_min && i < arr.size() - n;i ++){
-                if(n == 0){
-                    min_value = min(min_value, arr[i]);
-                }
-                else {
-                    all_min &= min_value == arr[i];
-                }
-                
-                result[n] = max(arr[i], result[n]);
-                arr[i - 1] = min(arr[i - 1], arr[i]);
+    stack<long> s;
+    vector<long> maxRiddle(arr.size(), 0);
+    int i = 0;
+    while(i < arr.size() || !s.empty()){
+        if(s.empty() || i < arr.size() && arr[i] >= arr[s.top()]){
+            s.push(i ++);
         }
-        
-        n ++;
+        else {
+            int n = s.top();
+            s.pop();
+            int range = s.empty() ? i : i - s.top() - 1;
+            maxRiddle[range - 1] = max(maxRiddle[range - 1], arr[n]);
+        }
     }
     
-    return result;
+    for(int j = maxRiddle.size() - 2;j >= 0; j --){
+        maxRiddle[j] = max(maxRiddle[j + 1], maxRiddle[j]);
+    }
+    
+    return maxRiddle;
 }
 
 int main()
 {
-    ofstream fout(getenv("OUTPUT_PATH"));
+    ofstream fout("output");
+    ifstream fin("input01.txt");
 
     int n;
-    cin >> n;
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    fin >> n;
+    fin.ignore(numeric_limits<streamsize>::max(), '\n');
 
     string arr_temp_temp;
-    getline(cin, arr_temp_temp);
+    getline(fin, arr_temp_temp);
 
     vector<string> arr_temp = split_string(arr_temp_temp);
 
