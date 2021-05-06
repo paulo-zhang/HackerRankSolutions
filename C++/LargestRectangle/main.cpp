@@ -21,7 +21,27 @@ long largestRectangle(vector<int> &h, int begin, int end){
 
 // Complete the largestRectangle function below.
 long largestRectangle(vector<int> &h) {
-    return largestRectangle(h, 0, h.size());
+    // This also work!
+    // return largestRectangle(h, 0, h.size());
+
+    // https://www.geeksforgeeks.org/largest-rectangle-under-histogram/
+    stack<int> s;
+    long largestRect = 0;
+    
+    int i = 0;
+    while(i < h.size() || !s.empty()){
+        if(s.empty() || i < h.size() && h[s.top()] <= h[i]){
+            s.push(i++);
+        }
+        else {
+            int j = s.top();
+            s.pop();
+            long area = h[j] * (s.empty()? i : i - s.top() - 1);
+            largestRect = max(area, largestRect);
+        }
+    }
+    
+    return largestRect;
 }
 
 int main()
