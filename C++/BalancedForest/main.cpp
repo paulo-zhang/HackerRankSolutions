@@ -15,94 +15,82 @@ vector<string> split(const string &);
  *  2. 2D_INTEGER_ARRAY edges
  */
  
- // Cut the tree
- bool canCutEqualTrees(vector<int> &c, vector<vector<int>> &edges, int cuttedEdge, int root, long weight){
-     for(int i = 0;i < edges.size();i ++){
-        if(i == cuttedEdge)continue;
+ bool searchValueInTree(vector<unsigned long> &sums, vector<vector<int>> &edges, int root, int excludeTree, unsigned long val){
+     queue<int> q;
+     q.push(root);
+     vector<int> visited(sums.size(), false);
+     
+     while(!q.empty()){
+         int a = q.front();
+         q.pop();
          
-        vector<bool> visited(c.size());
-        queue<int> q;
-        q.push(root);
-        long SumTa = 0;
-        while(!q.empty()){
-            // BFS visit all nodes.
-            int a = q.front();
-            q.pop();
-            
-            SumTa += c[a - 1];
-            visited[a - 1] = true;
-            
-            if(weight / 2 == SumTa)
-                return true;// Find equal trees
-            
-            for(int j = 0;j < edges.size();j ++){
-                if(i == j)continue;// This edge is cutted.
-                
-                if(a == edges[j][0] && !visited[edges[j][1] - 1]){
-                    q.push(edges[j][1]);
-                }
-                if(a == edges[j][1] && !visited[edges[j][0] - 1]){
-                    q.push(edges[j][0]);
-                }
-            }
-        }
+         if(sums[a - 1] == val){
+             return true;
+         }
+         visited[a - 1] = true;
+         
+         for(int i = 0;i < edges.size();i ++){
+             if(edges[i][1] == excludeTree)continue;
+             
+             if(edges[i][0] == a && !visited[edges[i][1] - 1]){
+                 q.push(edges[i][1]);
+             }
+         }
      }
      
-    return false;
+     return false;
  }
 
 int balancedForest(vector<int> c, vector<vector<int>> edges) {
-    // https://www.hackerrank.com/challenges/balanced-forest/forum/comments/255504
-    int Cw = INT_MAX;
-    long totalWeight = accumulate(c.begin(), c.end(), 0);
+    // https://www.hackerrank.com/challenges/balanced-forest/forum/comments/557372
+    vector<unsigned long> sums(c.size());
+    copy(c.begin(), c.end(), sums.begin());
+    int minVal = INT_MAX;
     
-    for(int i = 0;i < edges.size();i ++){
-        // Try cut one edge, and make two trees Ta, Tb
-        // Calculate sum of Ta
-        vector<bool> visited(c.size());
-        queue<int> q;
-        q.push(edges[i][0]);
-        long SumTa = 0;
-        
-        while(!q.empty()){
-            // BFS visit all nodes.
-            int a = q.front();
-            q.pop();
-            
-            SumTa += c[a - 1];
-            visited[a - 1] = true;
-            
-            for(int j = 0;j < edges.size();j ++){
-                if(i == j)continue;// This edge is cutted.
-                
-                if(a == edges[j][0] && !visited[edges[j][1] - 1]){
-                    q.push(edges[j][1]);
-                }
-                if(a == edges[j][1] && !visited[edges[j][0] - 1]){
-                    q.push(edges[j][0]);
-                }
+    for(int i = edges.size() - 1;i >= 0;i --){
+        sums[edges[i][0] - 1] += sums[edges[i][1] - 1];
+    }
+    
+    unordered_map<unsigned long, int> m;
+    for(int i = 1;i < sums.size();i ++){
+        // Case 1: Find two equal trees and a smaller one.
+        int val = (int)(sums[i] - (sums[0] - 2 * sums[i]));
+        if(val > 0){
+            int n = m[sums[i]];
+            if(n > 0){
+                // Found one.
+                minVal = min(minVal, val);
             }
-        }
-        
-        // Make sure Ta >= 2Tb or 2Ta <= Tb, so that we can cut the bigger tree into two equal trees and one is still bigger than the smaller tree.
-        // The difference between one of the equal trees and the smaller tree is the added value.
-        long SumTb = totalWeight - SumTa;
-        if(SumTa >= 2 * SumTb && SumTa % 2 == 0){
-            // Try cut Ta at any edge, and make the two trees equal
-            if(canCutEqualTrees(c, edges, i, edges[i][0], SumTa)){
-                Cw = min(Cw, (int)(SumTa / 2 - SumTb));
+            else{
+                // Keep track.
+                m[sums[i]] = i;
             }
+            
+            continue;
         }
-        
-        if(SumTb >= 2 * SumTa && SumTb % 2 == 0){
-            // Try cut Tb at any edge, and make the two trees equal
-            if(canCutEqualTrees(c, edges, i, edges[i][1], SumTb)){
-                Cw = min(Cw, (int)(SumTb / 2 - SumTa));
+        // Case 2: One big tree that can split into two bigger equal trees(Big tree has a subtree that holds half of its value), and a smaller one.
+        val = (int)(sums[i] / 2 - sums[0] - sums[i]);
+        if(sums[i] % 2 == 0 && val > 0){
+            if(searchValueInTree(sums, edges, i + 1, i + 1, sums[i] / 2)){
+                // Found one.
+                minVal = min(minVal, val);
+            }
+            continue;
+        }
+        // Case 3: Removing a smaller subtree and the rest tree has a subtree hold half of its total value.
+        val = sums[0] - sums[i];
+        if(val % 2 == 0){
+            int diff = (int)(val / 2 - sums[i]);
+            if(diff > 0){
+                // Found one.
+                if(searchValueInTree(sums, edges, 0, i + 1, val / 2)){
+                    minVal = min(minVal, diff);
+                }
             }
         }
     }
     
-    return Cw == INT_MAX ? -1 : Cw;
+    return minVal == INT_MAX ? -1 : minVal;
 }
 
 int main()
