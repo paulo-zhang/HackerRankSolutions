@@ -18,7 +18,7 @@ vector<string> split(const string &);
  bool searchValueInTree(vector<unsigned long> &sums, vector<vector<int>> &edges, int root, int excludeTree, unsigned long val){
      queue<int> q;
      q.push(root);
-     vector<int> visited(sums.size(), false);
+     vector<bool> visited(sums.size(), false);
      
      while(!q.empty()){
          int a = q.front();
@@ -29,8 +29,8 @@ vector<string> split(const string &);
          }
          visited[a - 1] = true;
          
-         for(int i = 0;i < edges.size();i ++){
-             if(edges[i][1] == excludeTree)continue;
+         for(int i = root;i < edges.size();i ++){
+             if(edges[i][1] == excludeTree) continue;
              
              if(edges[i][0] == a && !visited[edges[i][1] - 1]){
                  q.push(edges[i][1]);
@@ -75,6 +75,7 @@ int balancedForest(vector<int> c, vector<vector<int>> edges) {
                 // Found one.
                 minVal = min(minVal, val);
             }
+
             continue;
         }
         // Case 3: Removing a smaller subtree and the rest tree has a subtree hold half of its total value.
@@ -83,7 +84,7 @@ int balancedForest(vector<int> c, vector<vector<int>> edges) {
             int diff = (int)(val / 2 - sums[i]);
             if(diff > 0){
                 // Found one.
-                if(searchValueInTree(sums, edges, 0, i + 1, val / 2)){
+                if(searchValueInTree(sums, edges, 1, i + 1, val / 2)){
                     minVal = min(minVal, diff);
                 }
             }
@@ -140,7 +141,7 @@ int main()
 
         int result = balancedForest(c, edges);
 
-        fout << result << "\n";
+        cout <<"result: "<< result << "\n";
     }
 
     fout.close();
