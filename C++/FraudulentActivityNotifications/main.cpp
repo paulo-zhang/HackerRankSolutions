@@ -25,13 +25,13 @@ int activityNotifications(vector<int> expenditure, int d) {
                 if (count[j] == 0)continue;
                 p += count[j];
                 if (p * 2 == d) {
-                    int n = j;
+                    int n = j; // j is the middle number of d element list. d is a even number.
                     while (count[++n] == 0);
                     double_median = j + n;
                     break;
                 }
                 else if (p * 2 > d) {
-                    double_median = 2 * j;
+                    double_median = 2 * j; // The two middle numbers must be j, regardless of d being an odd or even number.
                     break;
                 }
             }
