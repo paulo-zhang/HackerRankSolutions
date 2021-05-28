@@ -42,6 +42,7 @@ long roadsAndLibraries(int n, int c_lib, int c_road, vector<vector<int>> cities)
         if(!visited[cities[i][0] - 1]){
             s.push(cities[i][0]);
         }
+        
         if(!visited[cities[i][1] - 1]){
             s.push(cities[i][1]);
         }
@@ -49,7 +50,7 @@ long roadsAndLibraries(int n, int c_lib, int c_road, vector<vector<int>> cities)
         visited[cities[i][0] - 1] = true;
         visited[cities[i][1] - 1] = true;
 
-        int count = 2;
+        int count = 2; // Count of cities.
         while(!s.empty()){
             int m = s.top();
             s.pop();
@@ -58,11 +59,12 @@ long roadsAndLibraries(int n, int c_lib, int c_road, vector<vector<int>> cities)
                 if(!visited[a]){
                     visited[a] = true;
                     count ++;
+                    s.push(a + 1); // missed this line in the first place.
                 }
             }
         }
         
-        totalCost += (count - 1) * (c_road - c_lib);
+        totalCost += (count - 1) * (c_road - c_lib); // There are (count - 1) roads to connect count cities.
     }
     
     return totalCost;
@@ -70,16 +72,17 @@ long roadsAndLibraries(int n, int c_lib, int c_road, vector<vector<int>> cities)
 
 int main()
 {
-    ofstream fout(getenv("OUTPUT_PATH"));
+    ofstream fout("output.txt");
+    ifstream fin("input04.txt");
 
     string q_temp;
-    getline(cin, q_temp);
+    getline(fin, q_temp);
 
     int q = stoi(ltrim(rtrim(q_temp)));
 
     for (int q_itr = 0; q_itr < q; q_itr++) {
         string first_multiple_input_temp;
-        getline(cin, first_multiple_input_temp);
+        getline(fin, first_multiple_input_temp);
 
         vector<string> first_multiple_input = split(rtrim(first_multiple_input_temp));
 
@@ -97,7 +100,7 @@ int main()
             cities[i].resize(2);
 
             string cities_row_temp_temp;
-            getline(cin, cities_row_temp_temp);
+            getline(fin, cities_row_temp_temp);
 
             vector<string> cities_row_temp = split(rtrim(cities_row_temp_temp));
 
@@ -110,7 +113,7 @@ int main()
 
         long result = roadsAndLibraries(n, c_lib, c_road, cities);
 
-        cout << result << "\n";
+        fout << result << "\n";
     }
 
     fout.close();
