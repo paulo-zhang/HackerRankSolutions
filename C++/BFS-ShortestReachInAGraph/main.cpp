@@ -4,6 +4,7 @@
 #include <iostream>
 #include <algorithm>
 #include <queue>
+#include <fstream>
 using namespace std;
 
 struct node{
@@ -28,20 +29,22 @@ class Graph {
             vector<int> result(nodes.size(), -1);
             vector<int> visited(nodes.size(), false);
             queue<int> q;
+            visited[start] = true; // Set visited when the node is being pushed in.
             q.push(start);
             nodes[start].dis = 0;
             
             while (!q.empty()) {
                 int n = q.front();
                 q.pop();
-                visited[n] = true;
                 result[n] = nodes[n].dis;
                 
                 for(size_t i = 0; i < nodes[n].adj_nodes.size(); ++i){
-                    if(visited[nodes[n].adj_nodes[i]])continue;
+                    int child = nodes[n].adj_nodes[i];
+                    if(visited[child])continue;
                     
-                    nodes[nodes[n].adj_nodes[i]].dis = nodes[n].dis + 6;
-                    q.push(nodes[n].adj_nodes[i]);
+                    visited[child] = true; // Set visited when the node is being pushed in.
+                    nodes[child].dis = nodes[n].dis + 6;
+                    q.push(child);
                 }
             }
             
@@ -50,26 +53,27 @@ class Graph {
 };
 
 int main() {
+    ifstream fin("input01.txt");
     int queries;
-    cin >> queries;
+    fin >> queries;
         
     for (int t = 0; t < queries; t++) {
       
 		int n, m;
-        cin >> n;
+        fin >> n;
         // Create a graph of size n where each edge weight is 6: 
         Graph graph(n);
-        cin >> m;
+        fin >> m;
         // read and set edges
         for (int i = 0; i < m; i++) {
             int u, v;
-            cin >> u >> v;
+            fin >> u >> v;
             u--, v--;
             // add each edge to the graph
             graph.add_edge(u, v);
         }
 		int startId;
-        cin >> startId;
+        fin >> startId;
         startId--;
         // Find shortest reach from node s
         vector<int> distances = graph.shortest_reach(startId);
