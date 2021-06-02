@@ -46,7 +46,7 @@ string reverseShuffleMerge(string s) {
                 result += smallest;
                 AddedCounts[smallest - 'a'] ++;
                 lastIndex = n;
-            } while (smallest != c);
+            } while (smallest != c);// Until the cannot-afford-to-miss is added.
         }
         else {
             char smallest = 0;
