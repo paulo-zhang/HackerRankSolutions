@@ -29,6 +29,7 @@ string rtrim(const string &);
 
 vector<string> crosswordPuzzle(vector<string> crossword, string words) {
     vector<string> wordList;
+    // Split word list.
     int begin = 0, i;
     for(i = 0;i < words.size();i ++){
         if(words[i] == ';'){
@@ -54,6 +55,7 @@ vector<string> crosswordPuzzle(vector<string> crossword, string words) {
             }
             else{
                 if(s1.count > 1){
+                    // cout << "Slot: i = " << s1.i << ", j = " << s1.j << ", count = " << s1.count << std::boolalpha << ", hizontal = " << s1.horizontal << endl;
                     slots.push_back(s1);
                 }
                 
@@ -64,13 +66,14 @@ vector<string> crosswordPuzzle(vector<string> crossword, string words) {
             // switch i, j.
             if(crossword[j][i] == '-'){
                 if(s2.i == -1){
-                    s2.i = i;
+                    s2.i = j;
                 }
                 
                 s2.count ++;
             }
             else{
                 if(s2.count > 1){
+                    // cout << "Slot: i = " << s2.i << ", j = " << s2.j << ", count = " << s2.count << std::boolalpha << ", hizontal = " << s2.horizontal << endl;
                     slots.push_back(s2);
                 }
                 
@@ -80,9 +83,11 @@ vector<string> crosswordPuzzle(vector<string> crossword, string words) {
         }
         
         if(s1.count > 1){
+            // cout << "Slot: i = " << s1.i << ", j = " << s1.j << ", count = " << s1.count << std::boolalpha << ", hizontal = " << s1.horizontal << endl;
             slots.push_back(s1);
         }
         if(s2.count > 1){
+            // cout << "Slot: i = " << s2.i << ", j = " << s2.j << ", count = " << s2.count << std::boolalpha << ", hizontal = " << s2.horizontal << endl;
             slots.push_back(s2);
         }
     } // End build slots.
@@ -92,35 +97,75 @@ vector<string> crosswordPuzzle(vector<string> crossword, string words) {
     }
     
     // Mark crossovers.
-    int verticalBegin = 0;
     for(int i = 0;i < slots.size(); i++){
-        if(slots[i].horizontal)break;
-        for(int j = verticalBegin; j < slots.size(); j++){
-            if(verticalBegin == 0 && !slots[j].horizontal) {
-                verticalBegin = j;
-            }
+        if(!slots[i].horizontal)continue;
+        for(int j = 0; j < slots.size(); j++){
             if(slots[j].horizontal)continue;
             
-            if(slots[i].j >= slots[j].j && slots[i].j + slots[i].count > slots[j].j && 
-                slots[j].i >= slots[i].i && slots[j].i + slots[j].count > slots[i].i){
+            if(slots[i].j <= slots[j].j && slots[i].j + slots[i].count > slots[j].j && 
+                slots[j].i <= slots[i].i && slots[j].i + slots[j].count > slots[i].i){
                 int cross_i = slots[i].i, cross_j = slots[j].j;
                 Crossover co = {.otherSlotId = j, .i = cross_i, .j = cross_j};
                 slots[i].crossovers.push_back(co);
                 co.otherSlotId = i;
                 slots[j].crossovers.push_back(co);
-                cout << i << "-"<<j<<";";
+                // cout << i << "-"<<j<<"," << cross_i << "-"<<cross_j<<"; ";
             }
         }
     }
     
     // Solve the problem
-    vector<vector<bool>> triedSpots(wordList.size(), vector<bool>(wordList.size(), false));
-    stack<Slot> s;
-    for(int i = 0; i < wordList.size(); i ++){ // Pick word.
-        for(int j = 0; j < slots.size(); j ++){ // Pick horizontal slot.
-            
+    // vector<vector<bool>> triedSpots(wordList.size(), vector<bool>(wordList.size(), false));
+    i = 0;
+    while(i < slots.size()){ // Pick word.
+        int j = slots[i].wordIndex + 1;
+        for(; j < wordList.size(); ++j){ // Pick slot.
+            if(wordList[j].size() != slots[i].count) continue; // At least word length should be correct.
+
+            bool correctSpot = true;
+            for(int k = 0;k < slots[i].crossovers.size(); ++k){ // All the cross over letters must be correct.
+                int id = slots[i].crossovers[k].otherSlotId;
+                if(slots[id].wordIndex == -1)continue;
+
+                char letterA = wordList[j][slots[i].horizontal ? slots[i].crossovers[k].j - slots[i].j : slots[i].crossovers[k].i - slots[i].i];
+                char letterB = wordList[slots[id].wordIndex][slots[id].horizontal ? slots[i].crossovers[k].j - slots[id].j : slots[i].crossovers[k].i - slots[id].i];
+                if(letterA != letterB){
+                    correctSpot = false;
+                    break;
+                }
+            }
+
+            if(correctSpot){// find a slot for now.
+                slots[i].wordIndex = j;
+                break;
+            }
         }
         
+        if(j == wordList.size()){
+            // no word for this slot, backtracking ...
+            --i; 
+        }
+        else{
+            // Next slot.
+            ++i;
+        }
+    }
+
+    // Solve the puzzle.
+    for(auto s: slots){ 
+        // cout << "Slot: i = " << s.i << ", j = " << s.j << ", count = " << s.count << std::boolalpha << ", horizontal = " << s.horizontal << ", word: " << wordList[s.wordIndex] << endl;
+        if(s.horizontal){
+            int n = s.j, m = 0;
+            do{
+                crossword[s.i][n ++] = wordList[s.wordIndex][m];
+            } while(++ m < s.count);
+        }
+        else{
+            int n = s.i, m = 0;
+            do{
+                crossword[n ++][s.j] = wordList[s.wordIndex][m];
+            } while(++ m < s.count);
+        }
     }
     
     return crossword;
@@ -145,14 +190,14 @@ int main()
     vector<string> result = crosswordPuzzle(crossword, words);
 
     for (size_t i = 0; i < result.size(); i++) {
-        fout << result[i];
+        cout << result[i];
 
         if (i != result.size() - 1) {
-            fout << "\n";
+            cout << "\n";
         }
     }
 
-    fout << "\n";
+    cout << "\n";
 
     fout.close();
 
