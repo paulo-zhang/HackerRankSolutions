@@ -15,83 +15,83 @@ vector<string> split(const string &);
  *  2. 2D_INTEGER_ARRAY edges
  */
  
- bool searchValueInTree(vector<unsigned long> &sums, vector<vector<int>> &edges, int root, int excludeTree, unsigned long val){
-     queue<int> q;
-     q.push(root);
-     vector<bool> visited(sums.size(), false);
+ struct Node{
+    bool visited;
+    vector<int> adj_nodes; 
+ };
+ 
+ // Make nodes for easier access.
+ void MakeNodes(vector<vector<int>> &edges, vector<Node> &nodes){
+     for(auto e : edges){
+         nodes[e[0] - 1].adj_nodes.push_back(e[1] - 1);
+         nodes[e[1] - 1].adj_nodes.push_back(e[0] - 1);
+     }
+ }
+ 
+ // DFS to calculate sum of tree whose root index is nodeIndex
+ long DFS_Sum(vector<int> &c, vector<Node> &nodes, int nodeIndex, multiset<long> &sums){
+     long sum = c[nodeIndex];
+     nodes[nodeIndex].visited = true;
      
-     while(!q.empty()){
-         int a = q.front();
-         q.pop();
-         
-         if(sums[a - 1] == val){
-             return true;
-         }
-         visited[a - 1] = true;
-         
-         for(int i = root;i < edges.size();i ++){
-             if(edges[i][1] == excludeTree) continue;
-             
-             if(edges[i][0] == a && !visited[edges[i][1] - 1]){
-                 q.push(edges[i][1]);
-             }
+     for(auto i : nodes[nodeIndex].adj_nodes){
+         if(!nodes[i].visited){
+             sum += DFS_Sum(c, nodes, i, sums);
          }
      }
      
-     return false;
+     sums.insert(sum);
+     cout << nodeIndex << ": " << sum << endl;
+     return sum;
+ }
+ 
+ // We got all the sums here, time to solve the problem.
+ int solveProblem(multiset<long> &sums, long totalSum){
+     // We need to find two equal sums (sumA & sumA), which are bigger than the rest (sumB = totalSum - 2 * sumA), the difference between sumA & sumB is the node we need to add to make 3 balanced trees.
+    // So sumA must satisfy: 3 * sumA > totalSum && 2 * sumA <  totalSum. sumB must satisfy: 3 * sumB < totalSum && (totalSum - sumB) % 2 == 0.
+    // The added value to make balanced trees is: 3 * sumA - totalSum, or (totalSum - sumB) / 2 - sumB.
+    // There are 3 scenarios:
+    // 1. There exist two sumA in sums, the rest is sumB. 
+    // 2. There is a sumA and a tree sum that equals to 2 * sumA (sumA must belong to that tree, if not, it'd violate 3 * sumA > totalSum).
+    // 3. There is a sumB and a tree sum that equals to sumA = (totalSum - sumB) / 2. (so we can cut sumA & sumB out.).
+    // So let's do it ...
+
+    int cw = INT_MAX; // The final minimum added node value.
+    
+    for(auto it = sums.begin();it != sums.end(); it++){
+        long sumA = *it;
+        long &sumB = sumA; // The concept of sumA and sumB are asymmetric.
+
+        if(3 * sumA > totalSum && 2 * sumA <  totalSum){
+            if(sums.count(sumA) == 2 || // scenario 1.
+                sums.find(2 * sumA) != sums.end() // scenario 2.
+            ){ 
+                cw = min((long)cw, 3 * sumA - totalSum);
+            }
+        }
+        else if(3 * sumB < totalSum && (totalSum - sumB) % 2 == 0){
+            if(sums.find((totalSum - sumB) / 2) != sums.end()){ // scenario 3.
+                cw = min((long)cw, (totalSum - sumB) / 2 - sumB);
+            }
+        }
+        
+    }
+    
+    return cw == INT_MAX ? -1 : cw;
  }
 
-int balancedForest(vector<int> c, vector<vector<int>> edges) {
-    // https://www.hackerrank.com/challenges/balanced-forest/forum/comments/557372
-    vector<unsigned long> sums(c.size());
-    copy(c.begin(), c.end(), sums.begin());
-    int minVal = INT_MAX;
+int balancedForest(vector<int> &c, vector<vector<int>> &edges) {
+    // https://www.hackerrank.com/challenges/balanced-forest/forum/comments/255504
+    multiset<long> sums; // All the sums for sub-trees.
+    vector<Node> nodes(c.size());
     
-    for(int i = edges.size() - 1;i >= 0;i --){
-        sums[edges[i][0] - 1] += sums[edges[i][1] - 1];
-    }
+    // Make nodes.
+    MakeNodes(edges, nodes);
     
-    unordered_map<unsigned long, int> m;
-    for(int i = 1;i < sums.size();i ++){
-        // Case 1: Find two equal trees and a smaller one.
-        int val = (int)(sums[i] - (sums[0] - 2 * sums[i]));
-        if(val > 0){
-            int n = m[sums[i]];
-            if(n > 0){
-                // Found one.
-                minVal = min(minVal, val);
-            }
-            else{
-                // Keep track.
-                m[sums[i]] = i;
-            }
-            
-            continue;
-        }
-        // Case 2: One big tree that can split into two bigger equal trees(Big tree has a subtree that holds half of its value), and a smaller one.
-        val = (int)(sums[i] / 2 - sums[0] - sums[i]);
-        if(sums[i] % 2 == 0 && val > 0){
-            if(searchValueInTree(sums, edges, i + 1, i + 1, sums[i] / 2)){
-                // Found one.
-                minVal = min(minVal, val);
-            }
-
-            continue;
-        }
-        // Case 3: Removing a smaller subtree and the rest tree has a subtree hold half of its total value.
-        val = sums[0] - sums[i];
-        if(val % 2 == 0){
-            int diff = (int)(val / 2 - sums[i]);
-            if(diff > 0){
-                // Found one.
-                if(searchValueInTree(sums, edges, 1, i + 1, val / 2)){
-                    minVal = min(minVal, diff);
-                }
-            }
-        }
-    }
+    // DFS to calculate sums of all sub-trees.
+    long totalSum = DFS_Sum(c, nodes, 0, sums);
     
-    return minVal == INT_MAX ? -1 : minVal;
+    // Solve the problem.
+    return solveProblem(sums, totalSum);
 }
 
 int main()
@@ -141,7 +141,7 @@ int main()
 
         int result = balancedForest(c, edges);
 
-        cout <<"result: "<< result << "\n";
+        cout << "\nanswer: " << result << "\n";
     }
 
     fout.close();
