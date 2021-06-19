@@ -23,7 +23,7 @@ struct Node{
  };
  
  // Make nodes for easier access.
- void MakeNodes(vector<vector<int>> &edges, vector<Node> &nodes){
+ void makeNodes(vector<vector<int>> &edges, vector<Node> &nodes){
      for(auto e : edges){
          nodes[e[0] - 1].adj_nodes.push_back(e[1] - 1);
          nodes[e[1] - 1].adj_nodes.push_back(e[0] - 1);
@@ -107,7 +107,7 @@ struct Node{
     vector<Node> nodes(c.size());
     
     // Make nodes.
-    MakeNodes(edges, nodes);
+    makeNodes(edges, nodes);
     
     // DFS traverse to calculate sums of all sub-trees.
     long totalSum = DFS_Sum(c, nodes, 0);
