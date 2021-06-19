@@ -14,10 +14,12 @@ vector<string> split(const string &);
  *  1. INTEGER_ARRAY c
  *  2. 2D_INTEGER_ARRAY edges
  */
- 
- struct Node{
-    bool visited;
+
+struct Node{
+    bool visited = false;
+    bool traversed = false;
     vector<int> adj_nodes; 
+    long sum;
  };
  
  // Make nodes for easier access.
@@ -29,69 +31,92 @@ vector<string> split(const string &);
  }
  
  // DFS to calculate sum of tree whose root index is nodeIndex
- long DFS_Sum(vector<int> &c, vector<Node> &nodes, int nodeIndex, multiset<long> &sums){
-     long sum = c[nodeIndex];
+ long DFS_Sum(vector<int> &c, vector<Node> &nodes, int nodeIndex){
+     nodes[nodeIndex].sum = c[nodeIndex];
      nodes[nodeIndex].visited = true;
      
      for(auto i : nodes[nodeIndex].adj_nodes){
          if(!nodes[i].visited){
-             sum += DFS_Sum(c, nodes, i, sums);
+             nodes[nodeIndex].sum += DFS_Sum(c, nodes, i);
          }
      }
-     
-     sums.insert(sum);
-     cout << nodeIndex << ": " << sum << endl;
-     return sum;
+
+     cout << nodeIndex << ": " << nodes[nodeIndex].sum << endl;
+     return nodes[nodeIndex].sum;
  }
  
  // We got all the sums here, time to solve the problem.
- int solveProblem(multiset<long> &sums, long totalSum){
-     // We need to find two equal sums (sumA & sumA), which are bigger than the rest (sumB = totalSum - 2 * sumA), the difference between sumA & sumB is the node we need to add to make 3 balanced trees.
-    // So sumA must satisfy: 3 * sumA > totalSum && 2 * sumA <  totalSum. sumB must satisfy: 3 * sumB < totalSum && (totalSum - sumB) % 2 == 0.
+ long minNodeValue(vector<Node> &nodes, unordered_set<long> &previouslyPassedNodeSums, unordered_set<long> &currentPathNodeSums, long totalSum, int nodeIndex){
+    // We need to find two equal sums (sumA & sumA), which are bigger than the rest (sumB = totalSum - 2 * sumA), the difference between sumA & sumB is the node we need to add to make 3 balanced trees.
+    // So sumA must satisfy: 3 * sumA >= totalSum && 2 * sumA <=  totalSum. sumB must satisfy: 3 * sumB <= totalSum && (totalSum - sumB) % 2 == 0.
     // The added value to make balanced trees is: 3 * sumA - totalSum, or (totalSum - sumB) / 2 - sumB.
-    // There are 3 scenarios:
-    // 1. There exist two sumA in sums, the rest is sumB. 
-    // 2. There is a sumA and a tree sum that equals to 2 * sumA (sumA must belong to that tree, if not, it'd violate 3 * sumA > totalSum).
-    // 3. There is a sumB and a tree sum that equals to sumA = (totalSum - sumB) / 2. (so we can cut sumA & sumB out.).
-    // So let's do it ...
+    // There are 6 scenarios:
+    // 1. For previouslyPassedNodeSums:
+    // 1.A. If current node sum is sumA, there must be a sibling node sum has the same value sumA. 
+    // 1.B. If current node sum is sumA, there must be a sibling node sumB = totalSum - 2 * sumA.
+    // 1.C. If current node sum is sumB, there must be a sibling node sumA = (totalSum - sumB) / 2.
+    // 2. For currentPathNodeSums:
+    // 2.A. If current node sum is sumA, there must be a parent node sum = 2 * sumA.
+    // 2.B. If current node sum is sumA, there must be a parent node sum = totalSum - sumA.
+    // 2.C. If current node sum is sumB, there must be a parent node sum = (totalSum + sumB) / 2.
+    // Check out the image Balanced-Trees.png.
 
-    int cw = INT_MAX; // The final minimum added node value.
-    
-    for(auto it = sums.begin();it != sums.end(); it++){
-        long sumA = *it;
-        long &sumB = sumA; // The concept of sumA and sumB are asymmetric.
+    long cw = LONG_MAX; // The final minimum added node value.
 
-        if(3 * sumA > totalSum && 2 * sumA <  totalSum){
-            if(sums.count(sumA) == 2 || // scenario 1.
-                sums.find(2 * sumA) != sums.end() // scenario 2.
-            ){ 
-                cw = min((long)cw, 3 * sumA - totalSum);
-            }
+     nodes[nodeIndex].traversed = true;
+    long sumA = nodes[nodeIndex].sum;
+    long &sumB = sumA; // The concepts of sumA and sumB are asymmetric & imaginary, just to make it easier to understand.
+
+    if(3 * sumA >= totalSum && 2 * sumA <=  totalSum){
+        if(previouslyPassedNodeSums.find(sumA) != previouslyPassedNodeSums.end() || // 1.A
+            previouslyPassedNodeSums.find(totalSum - 2 * sumA) != previouslyPassedNodeSums.end() // 1.B
+        ){
+            cw = min(cw, 3 * sumA - totalSum);
         }
-        else if(3 * sumB < totalSum && (totalSum - sumB) % 2 == 0){
-            if(sums.find((totalSum - sumB) / 2) != sums.end()){ // scenario 3.
-                cw = min((long)cw, (totalSum - sumB) / 2 - sumB);
-            }
+        else if(currentPathNodeSums.find(2 * sumA) != currentPathNodeSums.end() || // 2.A
+        currentPathNodeSums.find(totalSum - sumA) != currentPathNodeSums.end() // 2.B
+        ){
+            cw = min(cw, 3 * sumA - totalSum);
+        }
+    }
+    if(3 * sumB <= totalSum && (totalSum - sumB) % 2 == 0){
+        if((totalSum - sumB) % 2 == 0 && previouslyPassedNodeSums.find((totalSum - sumB) / 2) != previouslyPassedNodeSums.end()){ // 1.C
+            cw = min(cw, (totalSum - sumB) / 2 - sumB);
         }
         
+        else if((totalSum + sumB) % 2 == 0 && currentPathNodeSums.find((totalSum + sumB) / 2) != currentPathNodeSums.end()){ // 2.C
+            cw = min(cw, (totalSum - sumB) / 2 - sumB);
+        }
     }
     
-    return cw == INT_MAX ? -1 : cw;
- }
+    currentPathNodeSums.insert(sumA); // Finished current node, add to currentPathNodeSums to let the children trees calculate.
+    for(auto i : nodes[nodeIndex].adj_nodes){
+        if(!nodes[i].traversed){
+            cw = min(cw, minNodeValue(nodes, previouslyPassedNodeSums, currentPathNodeSums, totalSum, i));
+        }
+    }
 
-int balancedForest(vector<int> &c, vector<vector<int>> &edges) {
+    previouslyPassedNodeSums.insert(sumA); // Passing over this node.
+    currentPathNodeSums.erase(sumA); // Exiting current tree.
+    return cw;
+ }
+ 
+ long balancedForest(vector<int> &c, vector<vector<int>> &edges) {
     // https://www.hackerrank.com/challenges/balanced-forest/forum/comments/255504
-    multiset<long> sums; // All the sums for sub-trees.
+    // https://www.hackerrank.com/challenges/balanced-forest/forum/comments/557372
     vector<Node> nodes(c.size());
     
     // Make nodes.
     MakeNodes(edges, nodes);
     
-    // DFS to calculate sums of all sub-trees.
-    long totalSum = DFS_Sum(c, nodes, 0, sums);
+    // DFS traverse to calculate sums of all sub-trees.
+    long totalSum = DFS_Sum(c, nodes, 0);
     
     // Solve the problem.
-    return solveProblem(sums, totalSum);
+    unordered_set<long> previouslyPassedNodeSums; // All the node sums passed while traversing.
+    unordered_set<long> currentPathNodeSums; // Current path sums traced back to root.
+    long cw = minNodeValue(nodes, previouslyPassedNodeSums, currentPathNodeSums, totalSum, 0); // DFS traverse again to get the answer.
+    return cw == LONG_MAX ? -1 : cw;
 }
 
 int main()
@@ -139,9 +164,9 @@ int main()
             }
         }
 
-        int result = balancedForest(c, edges);
+        long result = balancedForest(c, edges);
 
-        cout << "\nanswer: " << result << "\n";
+        fout << result << "\n";
     }
 
     fout.close();
