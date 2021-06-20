@@ -11,9 +11,8 @@ struct Node{
 int getRoot(unordered_map<int, Node> &parents, int node){
     int i = node;
     while(parents[i].parent != i && parents[i].parent != 0){
-        int temp = parents[i].parent;
         parents[i].parent = parents[parents[i].parent].parent; // Compress path while traversing to reduce the tree depth.
-        i = temp;
+        i = parents[i].parent;
     }
     
     if(parents[i].parent == 0) {
