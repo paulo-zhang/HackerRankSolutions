@@ -72,7 +72,8 @@ long getHealth(const TrieNode &root, string s, int start, int end)
 
 int main()
 {
-    ifstream fin("input02.txt");
+    clock_t begin_time = clock();
+    ifstream fin("input13.txt");
     string n_temp;
     getline(fin, n_temp);
 
@@ -132,6 +133,7 @@ int main()
     
     cout << minHealth << " " << maxHealth;
 
+    cout << "\n" << float( clock () - begin_time ) /  CLOCKS_PER_SEC;
     return 0;
 }
 
