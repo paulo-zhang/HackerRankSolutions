@@ -117,9 +117,9 @@ vector<string> crosswordPuzzle(vector<string> crossword, string words) {
     // Solve the problem
     // vector<vector<bool>> triedSpots(wordList.size(), vector<bool>(wordList.size(), false));
     i = 0;
-    while(i < slots.size()){ // Pick word.
+    while(i < slots.size()){ // Pick slot.
         int j = slots[i].wordIndex + 1;
-        for(; j < wordList.size(); ++j){ // Pick slot.
+        for(; j < wordList.size(); ++j){ // Pick word.
             if(wordList[j].size() != slots[i].count) continue; // At least word length should be correct.
 
             bool correctSpot = true;

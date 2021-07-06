@@ -15,7 +15,7 @@ long largestRectangle(vector<int> &h, int begin, int end){
         }
     }
     
-    long area = min_value * (end - begin);
+    long area = min_value * (end - begin); // Min height in the range to calculate area.
     return max(area, max(largestRectangle(h, begin, min_index), largestRectangle(h, min_index + 1, end)));
 }
 

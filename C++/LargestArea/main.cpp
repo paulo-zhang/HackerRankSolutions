@@ -3,6 +3,7 @@
 #include<algorithm>
 #include<iostream>
 #include<functional>
+#include<math.h>
 
 using namespace std;
 
@@ -19,6 +20,38 @@ string rtrim(const string&);
  *  3. BOOLEAN_ARRAY isVertical
  *  4. INTEGER_ARRAY distance
  */
+
+/******************
+ * https://leetcode.com/problems/maximum-area-of-a-piece-of-cake-after-horizontal-and-vertical-cuts/
+ * ****************/
+class Solution {
+public:
+    int maxArea(int h, int w, vector<int>& horizontalCuts, vector<int>& verticalCuts) {
+        long maxWidth = 0, maxHeight = 0;
+        
+        // Sort the cuts.
+        sort(verticalCuts.begin(), verticalCuts.end());
+        sort(horizontalCuts.begin(), horizontalCuts.end());
+        
+        // Add cuts at 0 and end.
+        verticalCuts.insert(verticalCuts.begin(), 0);
+        verticalCuts.push_back(w);
+        horizontalCuts.insert(horizontalCuts.begin(), 0);
+        horizontalCuts.push_back(h);
+        
+        // Find the max width piece.
+        for(size_t i = 1; i < verticalCuts.size();i ++){
+            maxWidth = max((int)maxWidth, verticalCuts[i] - verticalCuts[i - 1]);
+        }
+        
+        // Find the max height piece.
+        for(size_t i = 1; i < horizontalCuts.size();i ++){
+            maxHeight = max((int)maxHeight, horizontalCuts[i] - horizontalCuts[i - 1]);
+        }
+        
+        return (int)((maxWidth * maxHeight) % (long)(pow(10, 9) + 7));
+    }
+};
 
 vector<long> getMaxArea(int w, int h, vector<bool> isVertical, vector<int> distance) {
     vector<int> verticalSegments;

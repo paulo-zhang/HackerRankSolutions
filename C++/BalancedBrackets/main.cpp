@@ -8,37 +8,29 @@ using namespace std;
 string isBalanced(string str) {
     stack<char> s;
     for (auto it = str.begin(); it != str.end(); it++) {
-        if (s.empty()) {
-            s.push(*it);
-            continue;
-        }
-
         switch (*it) {
         case '}':
-            if (s.top() == '{') {
+            if (!s.empty() && s.top() == '{') {
                 // matched
                 s.pop();
                 break;
             }
 
-            s.push(*it);
-            break;
+            return "NO";
         case ')':
-            if (s.top() == '(') {
+            if (!s.empty() && s.top() == '(') {
                 // matched
                 s.pop();
                 break;
             }
-            s.push(*it);
-            break;
+            return "NO";
         case ']':
-            if (s.top() == '[') {
+            if (!s.empty() && s.top() == '[') {
                 // matched
                 s.pop();
                 break;
             }
-            s.push(*it);
-            break;
+            return "NO";
         default:
             s.push(*it);
             break;

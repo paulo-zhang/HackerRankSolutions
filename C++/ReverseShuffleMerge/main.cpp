@@ -9,15 +9,15 @@ using namespace std;
 // Implement base on https://www.hackerrank.com/challenges/reverse-shuffle-merge/forum/comments/77705
 // Complete the reverseShuffleMerge function below.
 string reverseShuffleMerge(string s) {
-    int counts[26] = { 0 }, passedCounts[26] = { 0 }, AddedCounts[26] = { 0 };
+    int wantedCounts[26] = { 0 }, passedCounts[26] = { 0 }, AddedCounts[26] = { 0 };
     string result;
 
     for (char c : s) {
-        counts[c - 'a'] ++;
+        wantedCounts[c - 'a'] ++;
     }
 
     for (int i = 0; i < 26; i++) {
-        counts[i] = counts[i] / 2;
+        wantedCounts[i] = wantedCounts[i] / 2;
     }
 
     int lastIndex = s.size();
@@ -26,18 +26,18 @@ string reverseShuffleMerge(string s) {
         int index = c - 'a';
 
         passedCounts[index] ++;
-        if (counts[index] == AddedCounts[index]) {
-            continue;// Ignore
+        if (wantedCounts[index] == AddedCounts[index]) {
+            continue;// Ignore already filled.
         }
 
-        if (counts[index] < passedCounts[index] - AddedCounts[index]) {// Cannot afford to miss this one.
+        if (wantedCounts[index] < passedCounts[index] - AddedCounts[index]) {// Cannot afford to miss this one.
             char smallest;
             do {
                 smallest = 'z' + 1;
                 // Find the smallest wanted character
                 int n = i;
                 for (int j = lastIndex - 1; j >= i; j--) {
-                    if (s[j] < smallest && AddedCounts[s[j] - 'a'] < counts[s[j] - 'a']) {
+                    if (s[j] < smallest && AddedCounts[s[j] - 'a'] < wantedCounts[s[j] - 'a']) {
                         smallest = s[j];
                         n = j;
                     }
@@ -51,7 +51,7 @@ string reverseShuffleMerge(string s) {
         else {
             char smallest = 0;
             for (int i = 0; i < 26; i++) {
-                if (counts[i] > AddedCounts[i]) {
+                if (wantedCounts[i] > AddedCounts[i]) {
                     // smallest wanted.
                     smallest = i + 'a';
                     break;

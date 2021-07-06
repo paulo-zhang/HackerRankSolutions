@@ -14,84 +14,109 @@ vector<string> split(const string &);
  *  1. INTEGER_ARRAY c
  *  2. 2D_INTEGER_ARRAY edges
  */
+
+struct Node{
+    bool visited = false;
+    bool traversed = false;
+    vector<int> adj_nodes; 
+    long sum;
+ };
  
- bool searchValueInTree(vector<unsigned long> &sums, vector<vector<int>> &edges, int root, int excludeTree, unsigned long val){
-     queue<int> q;
-     q.push(root);
-     vector<bool> visited(sums.size(), false);
+ // Make nodes for easier access.
+ void makeNodes(vector<vector<int>> &edges, vector<Node> &nodes){
+     for(auto e : edges){
+         nodes[e[0] - 1].adj_nodes.push_back(e[1] - 1);
+         nodes[e[1] - 1].adj_nodes.push_back(e[0] - 1);
+     }
+ }
+ 
+ // DFS to calculate sum of tree whose root index is nodeIndex
+ long DFS_Sum(vector<int> &c, vector<Node> &nodes, int nodeIndex){
+     nodes[nodeIndex].sum = c[nodeIndex];
+     nodes[nodeIndex].visited = true;
      
-     while(!q.empty()){
-         int a = q.front();
-         q.pop();
-         
-         if(sums[a - 1] == val){
-             return true;
-         }
-         visited[a - 1] = true;
-         
-         for(int i = root;i < edges.size();i ++){
-             if(edges[i][1] == excludeTree) continue;
-             
-             if(edges[i][0] == a && !visited[edges[i][1] - 1]){
-                 q.push(edges[i][1]);
-             }
+     for(auto i : nodes[nodeIndex].adj_nodes){
+         if(!nodes[i].visited){
+             nodes[nodeIndex].sum += DFS_Sum(c, nodes, i);
          }
      }
-     
-     return false;
+
+     cout << nodeIndex << ": " << nodes[nodeIndex].sum << endl;
+     return nodes[nodeIndex].sum;
  }
+ 
+ // We got all the sums here, time to solve the problem.
+ long minNodeValue(vector<Node> &nodes, unordered_set<long> &previouslyPassedNodeSums, unordered_set<long> &currentPathNodeSums, long totalSum, int nodeIndex){
+    // We need to find two equal sums (sumA & sumA), which are bigger than the rest (sumB = totalSum - 2 * sumA), the difference between sumA & sumB is the node we need to add to make 3 balanced trees.
+    // So sumA must satisfy: 3 * sumA >= totalSum && 2 * sumA <=  totalSum. sumB must satisfy: 3 * sumB <= totalSum && (totalSum - sumB) % 2 == 0.
+    // The added value to make balanced trees is: 3 * sumA - totalSum, or (totalSum - sumB) / 2 - sumB.
+    // There are 6 scenarios:
+    // 1. For previouslyPassedNodeSums:
+    // 1.A. If current node sum is sumA, there must be a sibling node sum has the same value sumA. 
+    // 1.B. If current node sum is sumA, there must be a sibling node sumB = totalSum - 2 * sumA.
+    // 1.C. If current node sum is sumB, there must be a sibling node sumA = (totalSum - sumB) / 2.
+    // 2. For currentPathNodeSums:
+    // 2.A. If current node sum is sumA, there must be a parent node sum = 2 * sumA.
+    // 2.B. If current node sum is sumA, there must be a parent node sum = totalSum - sumA.
+    // 2.C. If current node sum is sumB, there must be a parent node sum = (totalSum + sumB) / 2.
+    // Check out the image Balanced-Trees.png.
 
-int balancedForest(vector<int> c, vector<vector<int>> edges) {
+    long cw = LONG_MAX; // The final minimum added node value.
+
+     nodes[nodeIndex].traversed = true;
+    long sumA = nodes[nodeIndex].sum;
+    long &sumB = sumA; // The concepts of sumA and sumB are asymmetric & imaginary, just to make it easier to understand.
+
+    if(3 * sumA >= totalSum && 2 * sumA <=  totalSum){
+        if(previouslyPassedNodeSums.find(sumA) != previouslyPassedNodeSums.end() || // 1.A
+            previouslyPassedNodeSums.find(totalSum - 2 * sumA) != previouslyPassedNodeSums.end() // 1.B
+        ){
+            cw = min(cw, 3 * sumA - totalSum);
+        }
+        else if(currentPathNodeSums.find(2 * sumA) != currentPathNodeSums.end() || // 2.A
+        currentPathNodeSums.find(totalSum - sumA) != currentPathNodeSums.end() // 2.B
+        ){
+            cw = min(cw, 3 * sumA - totalSum);
+        }
+    }
+    if(3 * sumB <= totalSum && (totalSum - sumB) % 2 == 0){
+        if((totalSum - sumB) % 2 == 0 && previouslyPassedNodeSums.find((totalSum - sumB) / 2) != previouslyPassedNodeSums.end()){ // 1.C
+            cw = min(cw, (totalSum - sumB) / 2 - sumB);
+        }
+        
+        else if((totalSum + sumB) % 2 == 0 && currentPathNodeSums.find((totalSum + sumB) / 2) != currentPathNodeSums.end()){ // 2.C
+            cw = min(cw, (totalSum - sumB) / 2 - sumB);
+        }
+    }
+    
+    currentPathNodeSums.insert(sumA); // Finished current node, add to currentPathNodeSums to let the children trees calculate.
+    for(auto i : nodes[nodeIndex].adj_nodes){
+        if(!nodes[i].traversed){
+            cw = min(cw, minNodeValue(nodes, previouslyPassedNodeSums, currentPathNodeSums, totalSum, i));
+        }
+    }
+
+    previouslyPassedNodeSums.insert(sumA); // Passing over this node.
+    currentPathNodeSums.erase(sumA); // Exiting current tree.
+    return cw;
+ }
+ 
+ long balancedForest(vector<int> &c, vector<vector<int>> &edges) {
+    // https://www.hackerrank.com/challenges/balanced-forest/forum/comments/255504
     // https://www.hackerrank.com/challenges/balanced-forest/forum/comments/557372
-    vector<unsigned long> sums(c.size());
-    copy(c.begin(), c.end(), sums.begin());
-    int minVal = INT_MAX;
+    vector<Node> nodes(c.size());
     
-    for(int i = edges.size() - 1;i >= 0;i --){
-        sums[edges[i][0] - 1] += sums[edges[i][1] - 1];
-    }
+    // Make nodes.
+    makeNodes(edges, nodes);
     
-    unordered_map<unsigned long, int> m;
-    for(int i = 1;i < sums.size();i ++){
-        // Case 1: Find two equal trees and a smaller one.
-        int val = (int)(sums[i] - (sums[0] - 2 * sums[i]));
-        if(val > 0){
-            int n = m[sums[i]];
-            if(n > 0){
-                // Found one.
-                minVal = min(minVal, val);
-            }
-            else{
-                // Keep track.
-                m[sums[i]] = i;
-            }
-            
-            continue;
-        }
-        // Case 2: One big tree that can split into two bigger equal trees(Big tree has a subtree that holds half of its value), and a smaller one.
-        val = (int)(sums[i] / 2 - sums[0] - sums[i]);
-        if(sums[i] % 2 == 0 && val > 0){
-            if(searchValueInTree(sums, edges, i + 1, i + 1, sums[i] / 2)){
-                // Found one.
-                minVal = min(minVal, val);
-            }
-
-            continue;
-        }
-        // Case 3: Removing a smaller subtree and the rest tree has a subtree hold half of its total value.
-        val = sums[0] - sums[i];
-        if(val % 2 == 0){
-            int diff = (int)(val / 2 - sums[i]);
-            if(diff > 0){
-                // Found one.
-                if(searchValueInTree(sums, edges, 1, i + 1, val / 2)){
-                    minVal = min(minVal, diff);
-                }
-            }
-        }
-    }
+    // DFS traverse to calculate sums of all sub-trees.
+    long totalSum = DFS_Sum(c, nodes, 0);
     
-    return minVal == INT_MAX ? -1 : minVal;
+    // Solve the problem.
+    unordered_set<long> previouslyPassedNodeSums; // All the node sums passed while traversing.
+    unordered_set<long> currentPathNodeSums; // Current path sums traced back to root.
+    long cw = minNodeValue(nodes, previouslyPassedNodeSums, currentPathNodeSums, totalSum, 0); // DFS traverse again to get the answer.
+    return cw == LONG_MAX ? -1 : cw;
 }
 
 int main()
@@ -139,9 +164,9 @@ int main()
             }
         }
 
-        int result = balancedForest(c, edges);
+        long result = balancedForest(c, edges);
 
-        cout <<"result: "<< result << "\n";
+        fout << result << "\n";
     }
 
     fout.close();
