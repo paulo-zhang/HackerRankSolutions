@@ -6,6 +6,7 @@ string ltrim(const string &);
 string rtrim(const string &);
 vector<string> split(const string &);
 
+
 struct NodeValue
 {
    size_t index;
@@ -19,11 +20,7 @@ struct TrieNode
     
     TrieNode()
     {
-        //memset(children, 0, 26 * sizeof(TrieNode*));
-        for(int i = 0;i < 26;i ++)
-        {
-            children[i] = NULL;
-        }
+        memset(children, 0, 26 * sizeof(TrieNode*));
     }
 };
 
@@ -46,7 +43,7 @@ void buildTrie(TrieNode &root, string words, size_t index, int health)
     p->healths.push_back(NodeValue{.index = index, .health = health});
 }
 
-long getHealth(TrieNode &root, string s, int start, int end)
+long getHealth(const TrieNode &root, string s, int start, int end)
 {
     long result = 0;
     for(size_t i = 0; i < s.size(); ++i)
@@ -64,7 +61,9 @@ long getHealth(TrieNode &root, string s, int start, int end)
                 }
             }
             
-            p = p->children[s[++j] - 'a'];
+            if(++j >= s.size())break;
+            
+            p = p->children[s[j] - 'a'];
         }
     }
     // cout << "result:" << result << endl;
