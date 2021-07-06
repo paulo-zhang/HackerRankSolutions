@@ -34,3 +34,5 @@ Debug
 /C++/MaximumSubarraySum/output.txt
 build
 .vscode
+/C#/DeterminingDNAHealth/bin/Release
+/C#/DeterminingDNAHealth/obj/Release

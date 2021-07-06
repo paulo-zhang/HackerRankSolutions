@@ -1,105 +1,122 @@
-﻿using System;
+﻿using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Collections;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using System.Text;
-using System.Threading.Tasks;
+using System;
 
-namespace DeterminingDNAHealth
+
+struct TrieNodeValue
 {
-    class Program
+    public int Index;
+    public int Health;
+}
+
+class TrieNode
+{
+    public TrieNode[] Children = new TrieNode[26];
+    public List<TrieNodeValue> TrieNodeValues = new List<TrieNodeValue>();
+}
+
+class Solution
+{
+    private TrieNode root = new TrieNode();
+
+    public void BuildTrie(string word, int index, int health)
     {
-        static void Main(string[] args)
+        TrieNode node = root;
+        for(int i = 0; i < word.Length; ++i)
         {
-            byte[] inputBuffer = new byte[1024 * 1024];
-            Stream inputStream = Console.OpenStandardInput(inputBuffer.Length);
-            Console.SetIn(new StreamReader(inputStream, Console.InputEncoding, false, inputBuffer.Length));
-
-
-            int n = Convert.ToInt32(Console.ReadLine());
-
-            string[] genes = Console.ReadLine().Split(' ');
-
-            int[] health = Array.ConvertAll(Console.ReadLine().Split(' '), healthTemp => Convert.ToInt32(healthTemp));
-            int s = Convert.ToInt32(Console.ReadLine());
-
-            int min = -1, max = 0;
-            for (int sItr = 0; sItr < s; sItr++)
+            int wordIndex = word[i] - 'a';
+            var n = node.Children[wordIndex];
+            if(n == null)
             {
-                string[] firstLastd = Console.ReadLine().Split(' ');
-
-                int first = Convert.ToInt32(firstLastd[0]);
-
-                int last = Convert.ToInt32(firstLastd[1]);
-
-                string d = firstLastd[2];
-
-                int h = GetHealthWithAhoCorasickAlgorithm2(genes, health, first, last, d);
-
-                if (min == -1 || min > h)
-                {
-                    min = h;
-                }
-
-                if (max < h)
-                {
-                    max = h;
-                }
+                n = new TrieNode();
+                node.Children[wordIndex] = n;
             }
 
-            Console.Write("{0} {1}", min, max);
-            Console.Read();
+            node = n;
         }
 
-        private static int GetHealthWithAhoCorasickAlgorithm2(string[] genes, int[] health, int first, int last, string d)
-        {
-            int h = 0;
-            AhoCorasickAlgorithm ahoCorasickAlgorithm = new AhoCorasickAlgorithm(genes);
-            int[] result = ahoCorasickAlgorithm.FindAllKeywordNextSearch(d);
-            
-            for(int i = first; i <= last; i ++)
-            {
-                h += result[i] * health[i];
-            }
+        node.TrieNodeValues.Add(new TrieNodeValue() { Index = index, Health = health });
+    }
 
-            return h;
-        }
+    public long GetHealth(string sequence, int start, int end)
+    {
+        long result = 0;
 
-        private static int GetHealthByTraverseStrandOnce(string[] genes, int[] health, int first, int last, string d)
+        for(int i = 0;i < sequence.Length; i ++)
         {
-            int h = 0;
-            for (int i = 0; i < d.Length; i++)
+            int j = i;
+            TrieNode node = root.Children[sequence[j] - 'a'];
+            while(node != null)
             {
-                for(int j = first; j <= last;j ++)
+                foreach(var v in node.TrieNodeValues)
                 {
-                    if (i + genes[j].Length <= d.Length && genes[j] == d.Substring(i, genes[j].Length))
+                    if(v.Index >= start && v.Index <= end)
                     {
-                        // matched.
-                        h += health[j];
+                        result += v.Health;
+                        // Console.Write("gen: {0}, health: {1}; ", sequence.Substring(i, j - i + 1), v.Health);
                     }
                 }
-            }
 
-            return h;
+                if (++j >= sequence.Length) break;
+
+                node = node.Children[sequence[j] - 'a'];
+            }
         }
 
-        private static int GetHealthWithAhoCrosickAlgorithm(string[] genes, int[] health, int first, int last, string d)
-        {
-            int len = last - first + 1;
-            string[] keywords = new string[len];
-            Array.Copy(genes, first, keywords, 0, len);
-            StringSearch stringSearch = new StringSearch(keywords);
-            var result = stringSearch.FindKeywordOccurency(d);
+        // Console.WriteLine("result: {0}", result);
+        return result;
+    }
 
-            int h = 0;
-            for (int i = first; i <= last; i++)
+    public static void Main(string[] args)
+    {
+        var start = DateTime.Now;
+        FileStream fileStream = new FileStream("input13.txt", FileMode.Open);
+        using (StreamReader sr = new StreamReader(fileStream))
+        {
+            int n = Convert.ToInt32(sr.ReadLine().Trim());
+
+            List<string> genes = sr.ReadLine().TrimEnd().Split(' ').ToList();
+
+            List<int> health = sr.ReadLine().TrimEnd().Split(' ').ToList().Select(healthTemp => Convert.ToInt32(healthTemp)).ToList();
+
+            int s = Convert.ToInt32(sr.ReadLine().Trim());
+
+            Solution solution = new Solution();
+            for (int i = 0; i < genes.Count; ++i)
             {
-                string key = genes[i];
-                result.TryGetValue(key, out int count);
-                h += count * health[i];
+                solution.BuildTrie(genes[i], i, health[i]);
             }
 
-            return h;
+            long minHealth = long.MaxValue, maxHealth = long.MinValue;
+            for (int sItr = 0; sItr < s; sItr++)
+            {
+                string[] firstMultipleInput = sr.ReadLine().TrimEnd().Split(' ');
+
+                int first = Convert.ToInt32(firstMultipleInput[0]);
+
+                int last = Convert.ToInt32(firstMultipleInput[1]);
+
+                string d = firstMultipleInput[2];
+
+                long result = solution.GetHealth(d, first, last);
+
+                minHealth = Math.Min(result, minHealth);
+                maxHealth = Math.Max(result, maxHealth);
+            }
+
+            Console.Write("{0} {1}", minHealth, maxHealth);
+            Console.WriteLine("\n" + (DateTime.Now - start).TotalMilliseconds);
+            Console.Read();
         }
     }
 }
