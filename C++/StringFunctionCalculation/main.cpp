@@ -11,6 +11,7 @@ struct TrieNode{
    }
 };
 
+// https://www.hackerearth.com/practice/notes/trie-suffix-tree-suffix-array/
 // Put c into Trie.
 // Mark maxVal.
 void insertChar(TrieNode &root, string &t, int start, int &maxVal){
