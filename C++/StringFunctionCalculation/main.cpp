@@ -2,45 +2,77 @@
 
 using namespace std;
 
-struct TrieNode{
-   TrieNode *children[26];
-   int reachCount;
-   TrieNode(){
-       reachCount = 0;
-       memset(children, 0 , sizeof(TrieNode*) * 26);
+struct SuffixNode{
+   SuffixNode *children[26];
+   string suffix;
+   int repeatCount;
+   bool leaf;
+   SuffixNode(){
+       repeatCount = 0;
+       leaf = true;
+       memset(children, 0 , sizeof(SuffixNode*) * 26);
    }
 };
 
 // https://www.hackerearth.com/practice/notes/trie-suffix-tree-suffix-array/
 // Put c into Trie.
 // Mark maxVal.
-void insertChar(TrieNode &root, string &t, int start, int &maxVal){
+void insertString(SuffixNode &root, string &t, int start, int &maxVal){
     int depth = 0;
-    TrieNode *p = &root;
+    SuffixNode *p = &root;
     
     for(int i = start; i < t.size(); ++i){
         int index = t[i] - 'a';
         depth ++; // Actually a string lenth.
         
-        TrieNode *child = p->children[index];
+        SuffixNode *child = p->children[index];
         if(child == NULL){
-            child = new TrieNode();
-            p->children[index] = child;
+            if(!p->leaf){
+                p->children[index] = new SuffixNode();
+                p->repeatCount ++;
+                maxVal = max(maxVal, p->repeatCount * depth);
+            }
+            else{
+                // This is a leaf.
+                if(p->suffix.size() == 0){
+                    p->suffix = t.substr(i, t.size() - i);
+                    p->repeatCount ++;
+                    maxVal = max(maxVal, p->repeatCount * depth);
+                    maxVal = max(maxVal, (int)t.size());
+                    break;
+                }
+                else {
+                    // Break down the previous suffix.
+                    p->repeatCount ++;
+                    maxVal = max(maxVal, p->repeatCount * depth);
+
+                    int ix = p->suffix[0] - 'a';
+                    p->children[ix] = new SuffixNode();
+                    p->children[ix]->repeatCount = 1;
+                    p->children[ix]->suffix = p->suffix.erase(0);
+                    p->suffix.clear();
+                    p->leaf = false;
+                    if(ix != index){
+                        p->children[index] = new SuffixNode();
+                        p->suffix = t.substr(i, t.size() - i);
+                        p->repeatCount ++;
+                        maxVal = max(maxVal, (int)t.size());
+                        break;
+                    }
+                }
+            }
         }
         
         p = p->children[index];
-        p->reachCount ++;
-        
-        maxVal = max(maxVal, p->reachCount * depth);
     }
 }
 
 int maxValue(string t) {
     int maxVal = 0;
-    TrieNode root;
+    SuffixNode root;
     
     for(int i = 0; i < t.size(); ++i){
-        insertChar(root, t, i, maxVal);
+        insertString(root, t, i, maxVal);
     }
     
     return maxVal;
