@@ -11,7 +11,10 @@ struct TrieNode{
 };
 
 void insert(TrieNode &head, int a){
-    uint mask = 0x80000000; // 10000000 00000000 00000000 00000000
+    // For negative operands, << has undefined behavior and the result of >> is implementation-defined (usually as "arithmetic" right shift). 
+    // << and >> are conceptually not bitwise operators. They're arithmetic operators equivalent to multiplication or division by the appropriate 
+    // power of two for the operands on which they're well-defined.
+    uint mask = 0x80000000; // 10000000 00000000 00000000 00000000, Don't use << or >> on a signed integer.
     TrieNode *p = &head;
 
     for(int i = 0;i < 32; ++i){
