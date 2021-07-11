@@ -12,7 +12,8 @@ vector<string> split(const string &);
  * The function is expected to return an INTEGER.
  * The function accepts INTEGER_ARRAY arr as parameter.
  */
- // Same as: https://www.hackerrank.com/challenges/insertion-sort/problem
+ // Same as: https://www.hackerrank.com/challenges/ctci-merge-sort/problem
+ // More slolutions: https://afteracademy.com/blog/inversion-count-in-an-array
 long merge(vector<int> &arr, vector<int> &temp, int start, int mid, int end){
      long count = 0;
      int i = start;
