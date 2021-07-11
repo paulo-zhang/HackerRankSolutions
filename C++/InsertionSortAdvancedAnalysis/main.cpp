@@ -13,8 +13,8 @@ vector<string> split(const string &);
  * The function accepts INTEGER_ARRAY arr as parameter.
  */
  
-int merge(vector<int> &arr, vector<int> &temp, int start, int mid, int end){
-     int count = 0;
+long merge(vector<int> &arr, vector<int> &temp, int start, int mid, int end){
+     long count = 0;
      int i = start;
      int j = mid;
      int n = start;
@@ -45,12 +45,12 @@ int merge(vector<int> &arr, vector<int> &temp, int start, int mid, int end){
      return count;
 }
  
- int mergeSort(vector<int> &arr, vector<int> &temp, int start, int end){
+ long mergeSort(vector<int> &arr, vector<int> &temp, int start, int end){
      if(end - start <= 1) return 0;
      
      int mid = start + (end - start) / 2;
      
-     int count = 0;
+     long count = 0;
      count += mergeSort(arr, temp, start, mid);
      count += mergeSort(arr, temp, mid, end);
      
@@ -59,28 +59,29 @@ int merge(vector<int> &arr, vector<int> &temp, int start, int mid, int end){
      return count;
  }
 
-int insertionSort(vector<int> &arr) {
+long insertionSort(vector<int> &arr) {
     vector<int> temp(arr.size());
     return mergeSort(arr, temp, 0, arr.size());
 }
 
 int main()
 {
-    ofstream fout(getenv("OUTPUT_PATH"));
+    // ofstream fout(getenv("OUTPUT_PATH"));
+    ifstream fin("input07.txt");
 
     string t_temp;
-    getline(cin, t_temp);
+    getline(fin, t_temp);
 
     int t = stoi(ltrim(rtrim(t_temp)));
 
     for (int t_itr = 0; t_itr < t; t_itr++) {
         string n_temp;
-        getline(cin, n_temp);
+        getline(fin, n_temp);
 
         int n = stoi(ltrim(rtrim(n_temp)));
 
         string arr_temp_temp;
-        getline(cin, arr_temp_temp);
+        getline(fin, arr_temp_temp);
 
         vector<string> arr_temp = split(rtrim(arr_temp_temp));
 
@@ -92,12 +93,12 @@ int main()
             arr[i] = arr_item;
         }
 
-        int result = insertionSort(arr);
+        long result = insertionSort(arr);
 
-        fout << result << "\n";
+        cout << result << "\n";
     }
 
-    fout.close();
+    // fout.close();
 
     return 0;
 }
