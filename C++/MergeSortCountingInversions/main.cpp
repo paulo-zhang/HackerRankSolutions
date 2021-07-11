@@ -7,6 +7,7 @@ using namespace std;
 
 vector<string> split_string(string);
 
+// Same as: https://www.hackerrank.com/challenges/insertion-sort/problem
 long merge(vector<int>& arr, size_t left, size_t mid, size_t right, vector<int>& temp) {
     size_t i = left;
     size_t j = mid;
