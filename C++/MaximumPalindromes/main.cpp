@@ -12,10 +12,25 @@ vector<string> split(const string &);
  * The function accepts STRING s as parameter.
  */
 
-string str;
+int M = 1000000007;
+vector<vector<int>> letters;
+vector<ulong> factorials;
 void initialize(string s) {
     // This function is called once before all queries.
-    str = s;
+    factorials.resize(s.size());
+    int i = 0;
+    for_each(s.begin(), s.end(), [](auto c){
+        if(i == 0){
+            letters.push_back(vector<int>(26));
+            factorials[i] = 1;
+        }
+        else{
+            letters.push_back(letters[i - 1]);
+            factorials[i] *= (i + 1);
+        }
+
+        letters[i ++][c - 'a'] ++;
+    });
 }
 
 /*
@@ -29,51 +44,23 @@ void initialize(string s) {
 
 // https://www.hackerrank.com/challenges/maximum-palindromes/forum/comments/448266
 // https://www.geeksforgeeks.org/fermats-little-theorem/
+// So the goal is to caculate: {X * (A + B + C ...)! / (A! * B! * C! ...) % M
+// or {X * (A + B + C ...)! * [A^(M-2) % M] * [B^(M-2) % M] * [B^(M-2) % M]} % M
+// Where A, B, C is the count of pair of one letter, X is the number of single letter (middle letter in a palindrome), M = 1000000007.
 
 int answerQuery(int l, int r) {
-    // Return the answer for this query modulo 1000000007.
-    int evenLetterCount = 0; // n
-    vector<int> restCounts(26, 0);
-    
-    for(int i = l - 1; i < r; ++i)
-    {
-        restCounts[str[i] - 'a'] ++;
-        if(restCounts[str[i] - 'a'] == 2)
-        {
-            evenLetterCount ++;
-        }
+    // Return the answer for this query modulo 1000000007
+    int evenPairCount = 0, // A, B, C ...
+    singleLetterCount = 0; // X
+    ulong denunminator = 1; // (A! * B! * C! ...)
+    for(int i = 0; i < 26; i++){
+        int letterCount = letters[r - 1][i] - letters[l - 1][i];
+        evenPairCount += letterCount / 2;
+        singleLetterCount += letterCount % 2;
+        denunminator *= factorials[evenPairCount - 1];
     }
-    
-    long result = 1;
-    int n = evenLetterCount;
-    // n!
-    while(n > 1)
-    {
-        result = n * result;
-        n --;
-    }
-    
-    int letterCount = 0;
-    for(int c : restCounts)
-    {
-        if(c % 2 != 0)
-        {
-            letterCount ++;
-        }
-        
-        int even = c / 2;
-        while(--even > 0)
-        {
-            result = evenLetterCount * result;
-        }
-    }
-    
-    if(letterCount > 0)
-    {
-        result = letterCount * result;
-    }
-    
-    return result  % 1000000007;
+
+    return (singleLetterCount * factorials[evenPairCount] / denunminator) % M;
 }
 
 int main()
