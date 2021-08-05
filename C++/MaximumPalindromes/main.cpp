@@ -11,25 +11,47 @@ vector<string> split(const string &);
  *
  * The function accepts STRING s as parameter.
  */
+ 
+ 
+// https://www.hackerrank.com/challenges/maximum-palindromes/forum/comments/448266
+// https://www.geeksforgeeks.org/fermats-little-theorem/
+// So the goal is to caculate: {X * (A + B + C ...)! / (A! * B! * C! ...) % M
+// or {X * (A + B + C ...)! * [A^(M-2) % M] * [B^(M-2) % M] * [B^(M-2) % M]} % M
+// Where A, B, C is the count of pair of one letter, X is the number of single letter (middle letter in a palindrome), M = 1000000007.
 
-int M = 1000000007;
+constexpr int M = 1000000007;
 vector<vector<int>> letters;
-vector<ulong> factorials;
+vector<ulong> modularFactorials;
+vector<ulong> ModularInverseOfFactorial;
+
+ulong modularPower(ulong x, ulong y){
+    // cout << "x: " << x << ", y: " << y << "\n";
+    if(y < 0) return 0;
+    if(y == 0) return 1;
+    if(y == 1) return x;
+    if(y % 2 == 0) return modularPower((x * x) % M, y / 2);
+    else  return (x * modularPower((x * x) % M, (y - 1) / 2)) % M;
+}
+
 void initialize(string s) {
     // This function is called once before all queries.
-    factorials.resize(s.size());
+    modularFactorials.resize(s.size());
     int i = 0;
-    for_each(s.begin(), s.end(), [](auto c){
+    for_each(s.begin(), s.end(), [&i](auto c){
         if(i == 0){
-            letters.push_back(vector<int>(26));
-            factorials[i] = 1;
+            letters.push_back(vector<int>(26, 0));
+            modularFactorials[i] = 1;
         }
         else{
             letters.push_back(letters[i - 1]);
-            factorials[i] *= (i + 1);
+            // N! % M = (N...(((1 % M) * 2) % M) % M ...) %M
+            modularFactorials[i] = (modularFactorials[i - 1] * (i + 1)) % M;
         }
 
-        letters[i ++][c - 'a'] ++;
+        letters[i][c - 'a'] ++;
+        ModularInverseOfFactorial.emplace_back(modularPower(modularFactorials[i], M -2));
+        // cout << "fact-mod: " << modularFactorials[i] << ", fact[" << i << "]: " << modularFactorials[i] << ", c: " << c << ", count: " << letters[i][c - 'a'] << "\n";
+        i ++;
     });
 }
 
@@ -42,44 +64,51 @@ void initialize(string s) {
  *  2. INTEGER r
  */
 
-// https://www.hackerrank.com/challenges/maximum-palindromes/forum/comments/448266
-// https://www.geeksforgeeks.org/fermats-little-theorem/
-// So the goal is to caculate: {X * (A + B + C ...)! / (A! * B! * C! ...) % M
-// or {X * (A + B + C ...)! * [A^(M-2) % M] * [B^(M-2) % M] * [B^(M-2) % M]} % M
-// Where A, B, C is the count of pair of one letter, X is the number of single letter (middle letter in a palindrome), M = 1000000007.
-
 int answerQuery(int l, int r) {
     // Return the answer for this query modulo 1000000007
-    int evenPairCount = 0, // A, B, C ...
+    ulong totalEvenPairCount = 0, // A, B, C ...
     singleLetterCount = 0; // X
-    ulong denunminator = 1; // (A! * B! * C! ...)
+    ulong multiplicativeInverse = 1; // [A^(M-2) % M] * [B^(M-2) % M] * [B^(M-2) % M]} % M
     for(int i = 0; i < 26; i++){
-        int letterCount = letters[r - 1][i] - letters[l - 1][i];
-        evenPairCount += letterCount / 2;
+        int letterCount = l - 2 < 0 ? letters[r - 1][i] : letters[r - 1][i] - letters[l - 2][i];
+        int evenPairCount = letterCount / 2;
+        totalEvenPairCount += evenPairCount;
         singleLetterCount += letterCount % 2;
-        denunminator *= factorials[evenPairCount - 1];
+        if(evenPairCount > 0){
+            multiplicativeInverse = (multiplicativeInverse * ModularInverseOfFactorial[evenPairCount - 1]) % M;
+        }
+    }
+    
+    if(singleLetterCount == 0) singleLetterCount = 1;
+    ulong factorial = 1;
+    if(totalEvenPairCount > 0){
+        factorial = modularFactorials[totalEvenPairCount - 1];
     }
 
-    return (singleLetterCount * factorials[evenPairCount] / denunminator) % M;
+    // cout << "single: " << singleLetterCount << ", fact[" << totalEvenPairCount << "]: " << factorial << ", multi-inverse: " << multiplicativeInverse << "\n";
+    
+    // The same as: return (singleLetterCount * factorial * multiplicativeInverse) % M;
+    return (singleLetterCount * ((factorial * multiplicativeInverse) % M)) % M; // Really big number.
 }
 
 int main()
 {
-    ofstream fout(getenv("OUTPUT_PATH"));
+    ofstream fout("output.txt");
+    ifstream fin("input27.txt");
 
     string s;
-    getline(cin, s);
+    getline(fin, s);
 
     initialize(s);
 
     string q_temp;
-    getline(cin, q_temp);
+    getline(fin, q_temp);
 
     int q = stoi(ltrim(rtrim(q_temp)));
 
     for (int q_itr = 0; q_itr < q; q_itr++) {
         string first_multiple_input_temp;
-        getline(cin, first_multiple_input_temp);
+        getline(fin, first_multiple_input_temp);
 
         vector<string> first_multiple_input = split(rtrim(first_multiple_input_temp));
 
@@ -88,7 +117,7 @@ int main()
         int r = stoi(first_multiple_input[1]);
 
         int result = answerQuery(l, r);
-
+        
         fout << result << "\n";
     }
 
