@@ -16,13 +16,13 @@ string abbreviation(string a, string b) {
                 dp[i][j] = a[j - 1] >= 'a' && dp[i][j - 1]; // True for lower case letters until it reach to an upper case letter.
             }
             else {
-                if (a[j - 1] == b[i - 1]) { // a[j - 1] is upper case.
+                if (a[j - 1] == b[i - 1]) { // a[j - 1] is upper case, no deletion.
                     dp[i][j] = dp[i - 1][j - 1];
                 }
-                else if (a[j - 1] == b[i - 1] + 'a' - 'A') { // a[j - 1] is lower case.
+                else if (a[j - 1] == b[i - 1] + 'a' - 'A') { // a[j - 1] is lower case, we can delete a[j - 1]
                     dp[i][j] = dp[i - 1][j - 1] || dp[i][j - 1];
                 }
-                else if (a[j - 1] >= 'a') {// Not the same letter, but a[j - 1] is lower case.
+                else if (a[j - 1] >= 'a') {// Not the same letter, but a[j - 1] is lower case, we can delete a[j - 1].
                     dp[i][j] = dp[i][j - 1];
                 }
                 // else a[j - 1] < 'a', default value is false

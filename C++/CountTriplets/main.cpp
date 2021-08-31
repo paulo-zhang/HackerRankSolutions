@@ -14,21 +14,21 @@ vector<string> split(const string&);
 // Complete the countTriplets function below.
 long countTriplets(vector<long> arr, long r) {
     long totalCount = 0;
-    unordered_map<long, long> allThePassedNumberCounts;
-    unordered_map<long, long> combinationCounts;// Combinations of first and second number.
+    unordered_map<long, long> oneNumberCounts;
+    unordered_map<long, long> twoNumberCombinationCounts;// Combinations of first and second number.
     for (size_t i = 0; i < arr.size(); i++) {
         
         if (arr[i] % r == 0) {
             long preValue = arr[i] / r;
-            totalCount += combinationCounts[preValue];
+            totalCount += twoNumberCombinationCounts[preValue];
             // Calculate the combinations of first & second number for future use.
             // This must be after calculating totalCount to pass the test case input02.txt.
-            combinationCounts[arr[i]] += allThePassedNumberCounts[preValue];
+            twoNumberCombinationCounts[arr[i]] += oneNumberCounts[preValue];
             // cout << preValue << "-" << arr[i] << "; " << "add: " << combinationCounts[preValue] <<endl;
         }
         
         // This must be the last line to pass test case input02.txt.
-        allThePassedNumberCounts[arr[i]] ++;
+        oneNumberCounts[arr[i]] ++;
     }
 
     return totalCount;

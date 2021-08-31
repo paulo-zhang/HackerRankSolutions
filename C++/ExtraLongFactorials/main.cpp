@@ -15,23 +15,17 @@ void extraLongFactorials(int n) {
     list<int> result(1, 1);
     int m = 1;
     while(++m <= n){
+        int carrying = 0;
         for(auto it = result.rbegin(); it != result.rend(); ++it){
-            *it *= m;
+            int total = *it * m + carrying;
+            carrying = total / 10;
+            *it = total % 10;
         }
-        
-        for(auto it = result.rbegin(); it != result.rend(); ++it){
-            if(*it < 10)continue;
-            
-            int temp = *it / 10;
-            *it = *it % 10;
-            
-            if(distance(it, result.rend()) == 1){
-                result.insert(result.begin(), temp);
-            }
-            else{
-                auto next = it;
-                *(++next) += temp;
-            }
+
+        while(carrying > 0)
+        {
+            result.insert(result.begin(), carrying % 10);
+            carrying = carrying / 10;
         }
     }
     
