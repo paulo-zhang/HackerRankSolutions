@@ -9,7 +9,7 @@ using namespace std;
 vector<string> split_string(string);
 
 // Complete the luckBalance function below.
-int luckBalance(int k, vector<vector<int>> contests) {
+int luckBalance(int k, vector<vector<int>>& contests) {
     int luck = 0;
     for (int i = 0; i < contests.size(); i++) {
         if (contests[i][1] == 0) {
@@ -19,7 +19,7 @@ int luckBalance(int k, vector<vector<int>> contests) {
         }
     }
 
-    sort(contests.begin(), contests.end(), [](vector<int> item1, vector<int> item2)
+    sort(contests.begin(), contests.end(), [](const vector<int> &item1, const vector<int>& item2)
         {
             return item1[0] > item2[0];
         });
