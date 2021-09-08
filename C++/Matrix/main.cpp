@@ -36,7 +36,7 @@ vector<string> split(const string &);
     int root2 = getRoot(parent_city, n2);
     
     if(bombs[root1] && bombs[root2]){
-        cout << "Two bomb: " << n1 << "-" << n2 << ", root1: " << root1 << ", root2: " << root2 << "\n";
+        cout << "Two bombs: " << n1 << "-" << n2 << ", root1: " << root1 << ", root2: " << root2 << "\n";
         return false;// At least one tree has bomb, skip insert.
     }
     
