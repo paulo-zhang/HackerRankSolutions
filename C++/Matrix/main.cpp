@@ -31,37 +31,21 @@ vector<string> split(const string &);
  }
  
  bool tryUnion(vector<int> &parent_city, int n1, int n2, vector<bool> &bombs){
-    if(bombs[n1] && bombs[n2]){
-        cout << "Two bombs: " << n1 << "-" << n2 << "\n";
-        return false; // Two cities have bombs.
-    }
-    else if(bombs[n1] || bombs[n2]){
-        // One city has bomb.
-        int root1 = getRoot(parent_city, n1);
-        int root2 = getRoot(parent_city, n2);
-        
-        if(bombs[root1] && !bombs[n1] || bombs[root2] && !bombs[n2]){ // Brain trick: existing tree has bombs, but the bomb is not contributted by the current nodes.
-            cout << "Tree bomb: " << n1 << "-" << n2 << ", root1: " << root1 << ", root2: " << root2 << "\n";
-            return false;// At least one tree has bomb, skip insert.
-        }
-        
-        // Connect the two city with one bomb.
-        parent_city[n2] = root1;
-        parent_city[root2] = root1;
-        // Set tree bomb: this tree has bomb.
-        bombs[root1] = true;
-        cout << "One bomb: " << n1 << "-" << n2 << ", root:" << root1 << "\n";
-        return true;
-    }
-     
-    // Both have no bombs.
+    // One city has bomb.
     int root1 = getRoot(parent_city, n1);
     int root2 = getRoot(parent_city, n2);
+    
+    if(bombs[root1] && bombs[root2]){
+        cout << "Two bomb: " << n1 << "-" << n2 << ", root1: " << root1 << ", root2: " << root2 << "\n";
+        return false;// At least one tree has bomb, skip insert.
+    }
+    
+    // Connect the two city with one or no bomb.
     // Connect the two city with no bomb.
     parent_city[n2] = root1;
     parent_city[root2] = root1;
     bombs[root1] = bombs[root2] || bombs[root1];
-    cout << "No bomb: " << n1 << "-" << n2 << ", hasbomb: " << boolalpha << bombs[root1]<< "\n";
+    cout << "One or No bomb: " << n1 << "-" << n2 << ", hasbomb: " << boolalpha << bombs[root1]<< "\n";
     return true;
  }
 
