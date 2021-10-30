@@ -73,10 +73,10 @@ vector<Suffix> getSuffixArray(const string& text){
 }
 
 // https://www.geeksforgeeks.org/%C2%AD%C2%ADkasais-algorithm-for-construction-of-lcp-array-from-suffix-array/
-// kasai’s Algorithm 
+// kasai's Algorithm 
 // Let lcp of suffix beginning at txt[i] be k. If k is greater than 0, then lcp for suffix beginning at txt[i+1] will be at-least k-1. 
 // The reason is, relative order of characters remain same. If we delete the first character from both suffixes, we know that at least k - 1 characters will match. 
-// For example for substring “ana”, lcp is 3, so for string “na” lcp will be at-least 2. Refer this for proof.
+// For example for substring "ana", lcp is 3, so for string "na" lcp will be at-least 2.
 vector<int> getLcp(const vector<Suffix>& suffixArr, const string& text){
     int n = suffixArr.size();
     vector<int> lcp(n);
@@ -113,7 +113,7 @@ vector<int> getLcp(const vector<Suffix>& suffixArr, const string& text){
 int findLargestRetangleInHistogram(vector<int> lcp){
     stack<int> s;
     
-    int maxRect = 0;
+    int maxRect = lcp.size(); // 
     int n = 0;
     while(n < lcp.size() || !s.empty()){
         if(s.empty() || n < lcp.size() && lcp[s.top()] <= lcp[n]) {
@@ -123,7 +123,8 @@ int findLargestRetangleInHistogram(vector<int> lcp){
         else {
             int top = s.top();
             s.pop();
-            maxRect = max(maxRect, (lcp[top] + 1) * (s.empty() ? n : n - s.top() - 1));
+            int area = lcp[top] * (1 + (s.empty() ? n : n - s.top() - 1)); // It's actually height * (width + 1)
+            maxRect = max(maxRect, area);
         }
     }
 
@@ -143,8 +144,8 @@ int maxValue(string t) {
     for(auto n : lcp){
         cout << n << " ";
     }
-
     cout << "\n";
+
     int maxVal = 0;
     maxVal = findLargestRetangleInHistogram(lcp);
     cout << maxVal;
