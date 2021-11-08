@@ -26,7 +26,7 @@ int activityNotifications(vector<int> expenditure, int d) {
                 p += count[j];
                 if (p * 2 == d) {
                     int n = j; // j is the 'middle number' of the even list. d is a even number.
-                    while (count[++n] == 0); // The next number is the other 'middle number' of the even list.
+                    while (count[++n] == 0); // The next number is the other 'middle number' of the event list.
                     double_median = j + n;
                     break;
                 }
