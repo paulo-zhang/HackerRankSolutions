@@ -12,7 +12,8 @@ vector<string> split(const string &);
  * The max overshoot lastMax = lastMax + m - freeCount.
  */
 
-int lastMax = 0;
+// Naive solution that passed 9/10 test cases, except for one timeout.
+/*uint lastMax = 0;
 int start = 0;
 vector<bool> freeUnits(100001, true);// All free units
 int taskScheduling(int d, int m) {
@@ -30,22 +31,125 @@ int taskScheduling(int d, int m) {
     }
     // cout << "d: " << d << ", m: " << m << ", free: " << freeCount << ", last: " << lastMax << "\n";
     lastMax += m - freeCount;
-    
     return lastMax;
+}*/
+
+// Segment tree with array: https://www.geeksforgeeks.org/segment-tree-set-1-sum-of-given-range/
+// Lazy propagation segment tree: https://www.geeksforgeeks.org/lazy-propagation-in-segment-tree/
+struct TreeNode{
+    TreeNode(int _size){
+        free = _size;
+        size = _size;
+        if(size > 1){
+            int leftSize = _size / 2;
+            int rightSize = _size - leftSize;
+            left = new TreeNode(leftSize);
+            right = new TreeNode(rightSize);
+        }
+    }
+
+    TreeNode* left = nullptr;
+    TreeNode* right = nullptr;
+    int free; // free time units that can be used to run task.
+    int size; // tree size.
+};
+
+class SegmentTree{
+    private:
+    TreeNode* root;
+    int maxOvershoot = 0; // The last max over shoot after scheduling the task.
+    // Destory the tree, release memory.
+    void DestoryTree(TreeNode* node){
+        if(node == nullptr) return;
+
+        if(node->left != nullptr){
+            DestoryTree(node->left);
+        }
+
+        if(node->right != nullptr){
+            DestoryTree(node->right);
+        }
+
+        delete node;
+    }
+
+    // Dynamically allocate tree to represent ever time unit (leaves).
+    // The number of leaves will be 2^root(log(dealine))
+    TreeNode* GetTreeRoot(int deadline){
+        while(deadline > root->size){
+            auto left = root;
+            root = new TreeNode(1);
+            root->left = left; // Make the old root a left child.
+            root->right = new TreeNode(left->size); // Create the same sized right tree.
+            root->size = left->size * 2; // Double the tree size.
+            root->free = left->free + root->right->free; // Keep track of the free units on the left side.
+        }
+
+        return root;
+    }
+    public:
+    SegmentTree(){
+        root = new TreeNode(1);
+    }
+
+    ~SegmentTree(){
+        DestoryTree(root);
+    }
+    
+    // Execute the task on node, and return the free units (not overshoot time units) used for this task.
+    int GetFreeUnits(TreeNode* node, int deadline, int duration){
+        if(node->free == 0 || deadline <= 0 || duration <= 0){
+            return 0; // No task to execute before deadline.
+        }
+
+        if((deadline >= node->size && node->free <= duration) || // The deadline covers current node & all free units (otherwise we need to allocate the right most units) can be consumed.
+            (node->left == nullptr && node->right == nullptr) // We reached to a leave, don't need to go deeper.
+        ){
+            int free = node->free;
+            node->free = 0;
+            return free;
+        }
+
+        int freeUnits = 0;
+        if(node->left->size < deadline){
+            // Left node is not enough, use the right most free units for rest duration. Allocate from deadline backward.s
+            freeUnits = GetFreeUnits(node->right, deadline - node->left->size, duration); // Deadline needs to readjust to suit new node.
+        }
+        // Use the left nodes, we can only allocate duration - freeUnits units.
+        freeUnits += GetFreeUnits(node->left, deadline, duration - freeUnits);
+
+        node->free -= freeUnits;
+        return freeUnits;
+    }
+
+    // Schedule task, return the max overshoot.
+    int ScheduleTask(int deadline, int duration){
+        TreeNode* root = GetTreeRoot(deadline);// Allocate tree nodes and return root.
+        int free = GetFreeUnits(root, deadline, duration);
+        // Rational: if we execute the task from deadline backward, current max overshoot = last max overshoot + duration - free units.
+        maxOvershoot += duration - free; 
+        return maxOvershoot;
+    }
+};
+
+SegmentTree tree;
+int taskScheduling(int d, int m) {
+    return tree.ScheduleTask(d, m);
 }
 
 int main()
 {
-    ofstream fout(getenv("OUTPUT_PATH"));
+    ofstream fout("output.txt");
+    ifstream fin("input00.txt");
 
     string t_temp;
-    getline(cin, t_temp);
+    getline(fin, t_temp);
 
     int t = stoi(ltrim(rtrim(t_temp)));
 
     for (int t_itr = 0; t_itr < t; t_itr++) {
         string first_multiple_input_temp;
-        getline(cin, first_multiple_input_temp);
+        getline(fin, first_multiple_input_temp);
 
         vector<string> first_multiple_input = split(rtrim(first_multiple_input_temp));
 
@@ -59,6 +163,7 @@ int main()
     }
 
     fout.close();
+    fin.close();
 
     return 0;
 }
