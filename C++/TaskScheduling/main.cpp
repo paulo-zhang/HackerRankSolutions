@@ -7,47 +7,31 @@ string rtrim(const string &);
 vector<string> split(const string &);
 
 /*
- * Complete the 'taskScheduling' function below.
- *
- * The function is expected to return an INTEGER.
- * The function accepts following parameters:
- *  1. INTEGER d
- *  2. INTEGER m
+ * Rational: Find the number of the free time units freeCount from the deadline backward.
+ * If the time units are not used, marke them as used.
+ * The max overshoot lastMax = lastMax + m - freeCount.
  */
 
-struct Task{
-    int d;
-    int m;
-    int t;
-};
-
-auto cmp = [](const auto& t1, const auto& t2){
-    // if(t1.m < t2.m) return true;
-    // if(t1.m > t2.m) return false;
-    
-    return t1.d < t2.d; 
-};
-
-multiset<Task, decltype(cmp)> tasks(cmp);
-int overshoots = 0;
+int lastMax = 0;
+int start = 0;
+vector<bool> freeUnits(100001, true);// All free units
 int taskScheduling(int d, int m) {
-    auto it = tasks.insert({d, m});
-    
-    int time = 0;
-    if(it != tasks.begin() && tasks.size() > 0){
-        auto pre_it = it;
-        advance(pre_it, -1);
-        time = pre_it->t;
+    int freeCount = 0; // the number of free time units before deadline.
+    int i = d - 1;
+    for(; i >= start && freeCount < m; --i){
+        if(freeUnits[i]){
+            freeCount ++;
+            freeUnits[i] = false; // Always occupy the largest possible time unit.
+        }
     }
     
-    while(it != tasks.end()){
-        time += it->m;
-        const_cast<int&>(it->t) = time; // I swear this is not the key.
-        overshoots = max(overshoots, time - it->d);
-        it ++;
+    if(i < start){
+        start = d; // All previus time units are marked.
     }
+    // cout << "d: " << d << ", m: " << m << ", free: " << freeCount << ", last: " << lastMax << "\n";
+    lastMax += m - freeCount;
     
-    return overshoots;
+    return lastMax;
 }
 
 int main()
