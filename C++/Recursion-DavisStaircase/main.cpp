@@ -5,13 +5,31 @@ using namespace std;
 string ltrim(const string &);
 string rtrim(const string &);
 
-/*
- * Complete the 'stepPerms' function below.
- *
- * The function is expected to return an INTEGER.
- * The function accepts INTEGER n as parameter.
- */
+// For every step: solution[x] = solution[x] + solution[x - step]
+// Question 9: https://www.educative.io/blog/crack-amazon-coding-interview-questions
+int stepPerms(int n) {
+    vector<int> dp(n + 1, 0);
+    dp[0] = 1;
+    for(int i = 1;i < dp.size(); ++i){
+        int n = i - 1;
+        dp[i] += dp[n];
+        
+        n = i - 2;
+        if(n >= 0){
+            dp[i] += dp[n];
+        }
+        
+        n = i - 3;
+        if(n >= 0){
+            dp[i] += dp[n];
+        }
+    }
+    
+    return dp.back();
+}
 
+/*
+// dp[i] = dp[i - 1] + dp[i - 2] + dp[i - 3];
 int stepPerms(int n) {
     if(n == 1)return 1;
     if(n == 2)return 2;
@@ -28,6 +46,7 @@ int stepPerms(int n) {
     
     return a3;
 }
+*/
 
 int main()
 {
