@@ -9,74 +9,64 @@ using namespace std;
 vector<string> split_string(string);
 
 // Complete the almostSorted function below.
+bool isSorted(const vector<int> &arr, int begin, int end, int incr)
+ {
+     int i = begin;
+     while(i != end){
+         if(arr[i] > arr[i + incr]) return false;
+         
+         i += incr;
+     }
+     
+     return true;
+ }
+
 void almostSorted(vector<int> arr) {
-    int l = -1, r = -1;
-    int ascending = 0;
-
-    for (size_t i = 0; i < arr.size() - 1; i++) {
-        if (l == -1) {
-            // Step 1: find l
-            if (arr[i] > arr[i + 1]) {
-                l = i;
-            }
-        }
-        else if (ascending == 0) { // Step2: decide ascending or descending in the middle
-            if (arr[i] < arr[i + 1]) {
-                ascending = 1;// ascending
-            }
-            else if (arr[i] > arr[i + 1]) {
-                ascending = -1; // descending
-            }
-        }
-        else if (r == -1) {
-            // Step3: find r 
-            if (ascending == 1) {
-                if (arr[i] > arr[i + 1]) {
-                    r = ++i;
-                }
-            }
-            else if (arr[i] < arr[i + 1]){
-                r = i;
-            }
-        }
-        else if (arr[i] > arr[i + 1]) {
-            // Step 4: make sure the rest are ordered.
-            cout << "no";
-            return;
-        }
-    }
-
-    if (l == -1) { // Step 1 not finished.
-        cout << "yes";
-    }
-    else if (ascending == 0) {// Step 2 not finished: all equal.
-        r = l + 1;
-    }
-    else if (r == -1) {
-        if (ascending == 1) {
-            r = l + 1;// Only possibility for r is the next number.
-        }
-        else {
-            r = arr.size() - 1; // r is the last number
+    // find l.
+    int l = -1;
+    for(int i = 0; i < arr.size() - 1; i++) {
+        if(arr[i] > arr[i + 1]) {
+            l = i;
+            break;
         }
     }
     
-    // Try reserse
-    if (ascending == -1 && r - l > 2 &&
-        (l == 0 || arr[r] >= arr[l - 1]) && (r == arr.size() - 1 || arr[l] <= arr[r + 1])) {
-        cout << "yes" << endl << "reverse " << l + 1 << " " << r + 1;
+    if(l == -1) {
+        cout << "yes";
         return;
     }
-
-    // Try swap with l & r
-    if ((l == 0 || arr[r] >= arr[l - 1]) &&
-        (arr[r] <= arr[l + 1] &&
-        arr[l] >= arr[r - 1] || r - l > 1 )&&
-        (r == arr.size() - 1 || arr[l] <= arr[r + 1])) {
-        cout << "yes" << endl << "swap " << l + 1 << " " << r + 1;
+    
+    // find r;
+    int r = -1;
+    for(int i = arr.size() - 1; i > 0 && i > l; i --)
+    {
+        if(arr[i] < arr[i - 1]){
+            r = i;
+            break;
+        }
+    }
+    
+    // can we swap?
+    swap(arr[l], arr[r]);
+    if((l > 0 && arr[l] < arr[l - 1]) || arr[l] > arr[l + 1] || (r < arr.size() - 1 && arr[r] > arr[r + 1]) || arr[r] < arr[r - 1]){
+        cout << "no";
         return;
     }
-
+    
+    if(isSorted(arr, l, r, 1))
+    {
+        cout << "yes\n" << "swap " << l + 1 << " " << r + 1;
+        return;
+    }
+    swap(arr[l], arr[r]); // restore the data back to original
+    
+    // can we reverse (ascending from the back)?
+    if(isSorted(arr, r, l, -1))
+    {
+        cout << "yes\n" << "reverse " << l + 1 << " " << r + 1;
+        return;
+    }
+    
     cout << "no";
 }
 
