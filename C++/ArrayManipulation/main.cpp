@@ -16,11 +16,13 @@ long arrayManipulation(int n, vector<vector<int>> queries) {
     for (size_t i = 0; i < queries.size(); i++)
     {
         int index1 = queries[i][0] - 1;
-        int index2 = queries[i][1] - 1;
+        int index2 = queries[i][1];
+        int value = queries[i][2];
 
-        arr[index1] += queries[i][2];
-        if (index2 + 1 < n) {
-            arr[index2 + 1] -= queries[i][2];
+        arr[index1] += value;
+        if (index2 < n)
+        {
+            arr[index2] -= value;
         }
     }
 
