@@ -15,13 +15,8 @@ struct NodeValue
 
 struct TrieNode
 {
-    TrieNode *children[26];
+    unique_ptr<TrieNode> children[26] = {nullptr};
     vector<NodeValue> healths;
-    
-    TrieNode()
-    {
-        memset(children, 0, 26 * sizeof(TrieNode*));
-    }
 };
 
 // https://www.geeksforgeeks.org/trie-insert-and-search/
@@ -33,10 +28,10 @@ void buildTrie(TrieNode &root, string words, size_t index, int health)
         int charIndex = words[i] - 'a';
         if(p->children[charIndex] == NULL)
         {
-            p->children[charIndex] = new TrieNode();
+            p->children[charIndex] = make_unique<TrieNode>();
         }
-        
-        p = p->children[charIndex];
+
+        p = p->children[charIndex].get();
     }
     
     // Word ended.
@@ -49,7 +44,7 @@ long getHealth(const TrieNode &root, string s, int start, int end)
     for(size_t i = 0; i < s.size(); ++i)
     {
         size_t j = i;
-        TrieNode *p = root.children[s[j] - 'a'];
+        TrieNode *p = root.children[s[j] - 'a'].get();
         while(p != NULL)
         {
             for(const auto &h : p->healths)
@@ -62,8 +57,8 @@ long getHealth(const TrieNode &root, string s, int start, int end)
             }
             
             if(++j >= s.size())break;
-            
-            p = p->children[s[j] - 'a'];
+
+            p = p->children[s[j] - 'a'].get();
         }
     }
     // cout << "result:" << result << endl;
