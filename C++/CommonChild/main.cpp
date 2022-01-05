@@ -7,29 +7,26 @@ using namespace std;
 
 // https://www.programiz.com/dsa/longest-common-subsequence
 // Complete the commonChild function below.
-int commonChild(string s1, string s2) {
-    int lcs = 0;
-    // We can actually do this with table(2), since we don't need to trace the subsequence string.
+int commonChild(string s1, string s2)
+{
     // https://www.geeksforgeeks.org/longest-common-substring-dp-29/
-    vector<vector<int>> table(s1.size() + 1);
+    vector<vector<int>> table(2, vector<int>(s2.size() + 1, 0));
 
-    for (size_t i = 0; i <= s1.size(); i++) {
-        table[i].resize(s2.size() + 1, 0);
-
-        if (i == 0)continue;
-
+    for (size_t i = 1; i <= s1.size(); i++)
+    {
         for (size_t j = 1; j <= s2.size(); j++) {
+            int row = i & 1;
+            int preRow = row ^ 1;
             if (s1[i - 1] == s2[j - 1]) {
-                table[i][j] += 1 + table[i - 1][j - 1]; // Find a common child element, so the lcs increase by 1.
-                lcs = max(table[i][j], lcs);// Is this the biggest?
+                table[row][j] = 1 + table[preRow][j - 1]; // Find a common child element, so the lcs increase by 1.
             }
             else {
-                table[i][j] = max(table[i][j - 1], table[i - 1][j]); // Not a common child element, so the lcs doesn't change.
+                table[row][j] = max(table[row][j - 1], table[preRow][j]); // Not a common child element, so the lcs doesn't change.
             }
         }
     }
 
-    return lcs;
+    return table[s1.size() & 1][s2.size()];
 }
 
 int main()
