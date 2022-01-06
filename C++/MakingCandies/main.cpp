@@ -17,16 +17,18 @@ long minimumPasses(long long m, long long w, long long p, long long n) {
         // Either by all w/m or buy none.
         // (m > LLONG_MAX / w): Purely to deal with data overflow.
         long non_invest_steps = (m >= LONG_MAX / w) ? 1 : (n - products + w * m - 1) / (w * m); // If we don't buy any more w/m, how many more steps needed to fulfill the requirement?
-        min_pass = min(min_pass, passes + non_invest_steps); // Can we use fewer steps to solve the problem without further calculation? Market down the minimum steps.
         long buy_none_steps = (m >= LONG_MAX / w) ? 1 : (p - products) / (w * m); // How many steps before being able to buy more w/m?
-        buy_none_steps = min(buy_none_steps, non_invest_steps); // Fewer steps is chosen to meet the goal.
-        if (buy_none_steps <= 0) {
-            // Invest plan
-            long wm = products / p;
-            products = products % p;
-            buy_none_steps = 1;
+        long steps = min(buy_none_steps, non_invest_steps);                       // Fewer steps is chosen to meet the goal.
+        min_pass = min(min_pass, passes + non_invest_steps);                      // Mark down the minimum steps in the process, as this could be the solution.
 
-            // Invest
+        if (buy_none_steps <= 0)
+        { // We can buy more machine or work power.
+            // Invest plan
+            long wm = products / p;  // The number that we can buy using all the 'money'.
+            products = products % p; // The rest 'money'.
+            steps = 1;               // We can only do one step because of the hardward change.
+
+            // Invest, make sure w and m are close to each other so that the multiplication is the maximum.
             if (m >= w + wm) {
                 w += wm;
             }
@@ -40,12 +42,14 @@ long minimumPasses(long long m, long long w, long long p, long long n) {
             }
         }
 
-        passes += buy_none_steps;
-        if (buy_none_steps * m >= LONG_MAX / w) { // Purely to deal with data overflow
-            if (buy_none_steps * m >= LONG_MAX / w && buy_none_steps * m < LONG_MAX / w + 1) {
+        passes += steps;
+        if (steps * m >= LONG_MAX / w)
+        { // Purely to deal with data overflow
+            if (steps * m >= LONG_MAX / w && steps * m < LONG_MAX / w + 1)
+            {
                 // Really extreme cases when the newly added product is not enough to fill the requested n.
                 // The test cases may never run into this area, but worth noting.
-                long added = m * w * buy_none_steps; // New products, it's not overflowed.
+                long added = m * w * steps; // New products, it's not overflowed.
                 if (n - products > added) { // Avoid overflow over: products += added
                     products += added;
                     continue;
@@ -55,7 +59,7 @@ long minimumPasses(long long m, long long w, long long p, long long n) {
         }
 
         // Build product.
-        products += m * w * buy_none_steps;
+        products += m * w * steps;
     } while (products < n);
 
     return min(passes, min_pass);
