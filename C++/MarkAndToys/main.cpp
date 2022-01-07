@@ -11,27 +11,19 @@ vector<string> split_string(string);
 
 // Complete the maximumToys function below.
 int maximumToys(vector<int> prices, int k) {
-    multiset<int> toyBasket;
-    int totalValue = 0;
-    for (auto it = prices.begin(); it != prices.end(); it++) {
-        if (*it > k)continue;
+    sort(prices.begin(), prices.end());
+    int maxToys = 0;
+    int moneySpent = 0;
+    for (int i = 0; i < prices.size(); i++)
+    {
+        if (moneySpent + prices[i] > k)
+            break;
 
-        if (totalValue + *it <= k) {
-            totalValue += *it;
-            toyBasket.insert(*it);
-            continue;
-        }
-
-        auto last = toyBasket.end();
-        advance(last, -1);
-        if (*it < *last) {
-            totalValue += *it - *last;
-            toyBasket.erase(last);
-            toyBasket.insert(*it);
-        }
+        moneySpent += prices[i];
+        maxToys++;
     }
 
-    return toyBasket.size();
+    return maxToys;
 }
 
 int main()
