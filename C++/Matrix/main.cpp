@@ -42,7 +42,6 @@ vector<string> split(const string &);
 
     // Connect the two city with one or no bomb.
     // Connect the two city with no bomb.
-    // parent_city[n2] = root1;
     parent_city[root2] = root1;
     bombs[root1] = bombs[root2] || bombs[root1];
     cout << "One or No bomb: " << n1 << "-" << n2 << ", hasbomb: " << boolalpha << bombs[root1]<< "\n";
