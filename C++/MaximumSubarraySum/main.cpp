@@ -16,14 +16,13 @@ long maximumSum(vector<long> a, long m) {
     // (a−b)%M=(a%M−b%M)%M  --- 2
     // sumModular[i,j]=(prefix[j]−prefix[i−1]+M)%M  --3
     // If prefix[j] < prefix[i], we have: (prefix[i]−prefix[j]+M)%M=prefix[i]−prefix[j]<=prefix[i]
-    
-    vector<unsigned long> prefix(a.size());
-    set<unsigned long> ordered_prefix;
-    unsigned long pre_prefix = a[0] % m;
-    unsigned long max_sum = pre_prefix;
-    ordered_prefix.insert(pre_prefix);
 
-    for (int i = 1; i < a.size(); i++) {
+    set<unsigned long> ordered_prefix;
+    unsigned long pre_prefix = 0;
+    unsigned long max_sum = 0;
+
+    for (int i = 0; i < a.size(); i++)
+    {
         /*Usually, a great many problems related to "subarray computation" could be solved with prefix array, which saves time for repeating computation.
             Define:
         prefix[n] = (a[0] + a[1] + ... + a[n]) % M*/
