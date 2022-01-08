@@ -10,37 +10,68 @@ using namespace std;
 
 vector<string> split_string(string);
 
-// Complete the poisonousPlants function below.
-int poisonousPlants(vector<int> p) {
-    vector<int> days(p.size());
-    int minPoison = p[0];
-    int maxDay = 0;
-    stack<int> traversedIndexs;
-
-    traversedIndexs.push(0);
-
-    for (int i = 1; i < p.size(); i++) // Start from index = 1
-    {
-        if (p[i] > p[i - 1]) {
-            days[i] = 1; // Greater than the immediate left
+int poisonousPlants_Non_Optimized(vector<int> p) {
+    int maxDays = 0;
+    int smallest = p[0];
+    vector<int> days(p.size(), 0);
+    
+    for(int i = 1;i < p.size(); i ++) {
+        if(p[i] < smallest) {
+            smallest = p[i];
         }
-
-        minPoison = min(minPoison, p[i]);// Mark mallest.
-
-        while (!traversedIndexs.empty() && p[traversedIndexs.top()] >= p[i]) // Less or equal than the immediate left
-        {
-            if (p[i] > minPoison) {// Bigger or equal than the smallest on the left
-                days[i] = max(days[i], days[traversedIndexs.top()] + 1); // Die after all non-less numbers on its left die - the die day is the biggest die day on its left + 1.
+        else if(p[i] > p[i - 1]) {
+            days[i] = 1;
+            maxDays = max(maxDays, 1);
+        }
+        else {
+            int j = i - 1;
+            while(j >= 0 && p[j] >= p[i]) {
+                if(days[j] > 0) {
+                    days[i] = max(days[i], days[j] + 1);
+                    maxDays = max(days[i], maxDays);
+                }
+                
+                j --;
             }
-
-            traversedIndexs.pop(); // Remove trace, since this number won't be relevant to the numbers behind.
         }
-
-        maxDay = max(maxDay, days[i]); // Is this the max day?
-        traversedIndexs.push(i); // Mark trace for future number comparision.
     }
+    
+    return maxDays;
+}
 
-    return maxDay;
+int poisonousPlants(vector<int> p) {
+    int maxDays = 0;
+    int smallest = p[0];
+    vector<int> days(p.size(), 0);
+    stack<int> traversedIndexs; // Keep track of the relevant plants that have passed and relevant to the future.
+    
+    for(int i = 1;i < p.size(); i ++) {
+        if(p[i] < smallest){ // p[i] is the smallest so far, this won't die.
+            smallest = p[i];
+        }
+        else if(p[i] > p[i - 1]) { // bigger than the immediate left, die at the first day
+            days[i] = 1;
+            maxDays = max(maxDays, 1);
+        }
+        else { // Smaller or equal to the immediate left.
+            while(!traversedIndexs.empty()) {
+                int j = traversedIndexs.top();
+                if(p[j] < p[i])break; // i must die before j, and j is relevant to the plants behind.
+                
+                // i dies after all non-smaller plants on its left die - the die day is the biggest die day on its left + 1.
+                if(days[j] > 0) { // Only case when days[j] == 0 is that all the values are the same.
+                    days[i] = max(days[i], days[j] + 1);
+                    maxDays = max(days[i], maxDays);
+                }
+                
+                traversedIndexs.pop(); // Remove trace, since this plants won't be relevant to the plants behind, because p[j] >= p[i]. This is key to better performance.
+            }
+        }
+        
+        traversedIndexs.push(i);
+    }
+    
+    return maxDays;
 }
 
 int main()
