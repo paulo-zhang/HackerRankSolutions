@@ -44,15 +44,23 @@ void minimumBribes(vector<int> q) {
 void minimumBribes2(vector<int> q)
 {
     int ans = 0;
-    for (int i = q.size() - 1; i >= 0; i--) {
-        if (q[i] - (i + 1) > 2) {
-            cout << "Too chaotic" << endl;
-            return;
-        }
-        for (int j = max(0, q[i] - 2); j < i; j++)
-            if (q[j] > q[i]) ans++;
-    }
-    cout << ans << endl;
+  for(int i = q.size() - 1; i >= 0; i --) {
+      if(q[i] > i + 3) { // Move more than two steps ahead.
+          cout << "Too chaotic\n";
+          return;
+      }
+      
+      int pre = max(0, q[i] - 2); // q[i] - 2: the furtest that q[i]'s immediate after element can move ahead to.
+      while(pre < i) {
+          if(q[pre] > q[i]) { // The element that moves ahead of q[i]
+              ans ++; 
+          }
+          
+          pre ++;
+      }
+  }
+  
+  cout << ans << "\n";
 }
 
 /// <summary>
@@ -68,21 +76,21 @@ void minimumBribes1(vector<int> q) {
     int expectedThird = 3;
 
     for (unsigned int i = 0; i < q.size(); ++i) {
-        if (q[i] == expectedFirst) {
+        if (q[i] == expectedFirst) { // q[i] doesn't move.
             expectedFirst = expectedSecond;
             expectedSecond = expectedThird;
             ++expectedThird;
         }
-        else if (q[i] == expectedSecond) {
+        else if (q[i] == expectedSecond) { // q[i] moves one step ahead.
             ++totalBribes;
             expectedSecond = expectedThird;
             ++expectedThird;
         }
-        else if (q[i] == expectedThird) {
+        else if (q[i] == expectedThird) { // q[i] moves two steps ahead.
             totalBribes += 2;
             ++expectedThird;
         }
-        else {
+        else { // q[i] moves more than one step.
             cout << "Too chaotic" << endl;
             return;
         }
