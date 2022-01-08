@@ -23,14 +23,18 @@ int nonDivisibleSubset(int k, vector<int> s) {
         mods[mod] ++;
     }
     
-    // 1. i == 0: Only one of k's multiple can be added.
+    // 1. Only one of k's multiple can be added.
     int count = mods[0] > 0 ? 1 : 0;
-    for(int i = 1; i <= k / 2; ++i){
-        if(2 * i == k){ // 2 * i == k: Only one of middle-number can be added, because the sum of two of them yields a multiple of k.
-            count += k % 2 == 0 && mods[k / 2] > 0 ? 1 : 0;
-            continue;
-        }
-        
+    int end;
+    if(k % 2 == 0){ // 2. Only one of middle-number can be added, because the sum of two of them yields a multiple of k.
+        count += mods[k / 2] > 0 ? 1 : 0;
+        end = k / 2 - 1;
+    }
+    else {
+        end = k / 2;
+    }
+    
+    for(int i = 1; i <= end; ++i){
         int n = max(mods[i], mods[k - i]);// 3. Pick the bigger count of the two sides.
         count += n;
     }
