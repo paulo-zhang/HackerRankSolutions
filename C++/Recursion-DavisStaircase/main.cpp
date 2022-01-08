@@ -48,6 +48,24 @@ int stepPerms(int n) {
 }
 */
 
+/* // Recursive solution.
+int recursivePerms(vector<int> &memorized, int n){
+    if(n == 0){memorized[n] = 1; return 1;}
+    if(n < 0) return 0;
+    
+    if(memorized[n] > 0) return memorized[n];
+    
+    memorized[n] = recursivePerms(memorized, n - 1) + recursivePerms(memorized, n - 2) + recursivePerms(memorized, n - 3);
+    return memorized[n];
+}
+
+int stepPerms(int n) {
+    vector<int> memorized(n + 1, 0);
+    
+    return recursivePerms(memorized, n);
+}
+*/
+
 int main()
 {
     ofstream fout(getenv("OUTPUT_PATH"));
