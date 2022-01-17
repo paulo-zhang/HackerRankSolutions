@@ -34,6 +34,37 @@ int taskScheduling(int d, int m) {
     return lastMax;
 }*/
 
+/*************/
+bool initialized = false;
+set<int> freeUnits; // All free units
+int lastOverShoot = 0;
+
+int taskScheduling1(int d, int m)
+{
+    if (!initialized)
+    {
+        for (int i = 1; i < 100001; i++)
+        {
+            freeUnits.insert(i);
+        }
+
+        initialized = true;
+    }
+
+    auto last = freeUnits.upper_bound(d);
+    auto first = last;
+
+    while (first != freeUnits.begin() && m > 0)
+    {
+        first--;
+        m--;
+    }
+
+    freeUnits.erase(first, last);
+    lastOverShoot += m; // over_shoot = last_over_shoot + m(current over shoot);
+    return lastOverShoot;
+}
+
 // Segment tree with array: https://www.geeksforgeeks.org/segment-tree-set-1-sum-of-given-range/
 // Lazy propagation segment tree: https://www.geeksforgeeks.org/lazy-propagation-in-segment-tree/
 struct TreeNode{
@@ -73,7 +104,7 @@ class SegmentTree{
         delete node;
     }
 
-    // Dynamically allocate tree to represent ever time unit (leaves).
+    // Dynamically allocate tree to represent every time unit (leaves).
     // The number of leaves will be 2^root(log(dealine))
     TreeNode* GetTreeRoot(int deadline){
         while(deadline > root->size){
@@ -112,7 +143,7 @@ class SegmentTree{
 
         int freeUnits = 0;
         if(node->left->size < deadline){
-            // Left node is not enough, use the right most free units for rest duration. Allocate from deadline backward.s
+            // Left node is not enough, use the right most free units for rest duration. Allocate from deadline backward.
             freeUnits = GetFreeUnits(node->right, deadline - node->left->size, duration); // Deadline needs to readjust to suit new node.
         }
         // Use the left nodes, we can only allocate duration - freeUnits units.
