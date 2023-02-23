@@ -42,7 +42,8 @@ class Solution{
         
         // At this point, all suffixes are sorted according to first
         // 2 characters.  Let us sort suffixes according to first 4 characters, then first 8 and so on.
-        for(int k = 4; k < 2 * s.size(); k *= 2){
+        int doubleSize = s.size() << 1;
+        for(int k = 4; k < doubleSize; k = (k << 1)){
             assignNewRank(rank);
             // Assign position k to second ranking index.
             assignCharacterRank(rank, k);
@@ -59,7 +60,7 @@ class Solution{
     // IMPORTANT: When we assign the next rank for k, we assign the next k/2 sorted string's rank to k string's rank, not the k character's rank.
     void assignCharacterRank(vector<RankNode>& rank, int k){
         for(int i = 0; i < rank.size(); i++){
-            int next = rank[i].index + k / 2;
+            int next = rank[i].index + (k >> 1);
             rank[i].second = (next < s.size()) ? rank[reversedArr[next]].first : -1;
         }
     }
@@ -144,7 +145,8 @@ class Solution{
     }
     
     // Perform range minimum query using sparse table: lookup[i][j] = minInRange(i, i + 2 ^ j - 1) = min(lookup[i][j - 1], lookup[i + 2 ^ (j - 1)][j - 1]);.
-    int rangeMinimumQuery(int index1, int index2){
+    int rangeMinimumQuery(int low1, int low2){
+        int index1 = reversedArr[low1], index2 = reversedArr[low2];// Get the suffix array index.
         if(index1 > index2){
             swap(index1, index2);
         }
@@ -163,39 +165,17 @@ class Solution{
         return minVal;
     }
     
-    int commonPrefixLength(int low1, int high1, int low2, int high2){
-        if(low1 > high1 || low2 > high2) return 0;
-        
-        if(low1 == low2) return high1 - low1 + 1; // Same suffix start.
-        
-        int index1 = reversedArr[low1], index2 = reversedArr[low2];// Get the suffix array index.
-        return rangeMinimumQuery(index1, index2);
-    }
-    
     bool isSimilar(int low1, int high1, int low2, int high2){
         int maxLen = min(high1 - low1 + 1, high2 - low2 + 1) - 1;
         
-        int len1 = commonPrefixLength(low1, high1, low2, high2);
-        return len1 >= maxLen || len1 + commonPrefixLength(low1 + len1 + 1, high1, low2 + len1 + 1, high2) >= maxLen;
+        int len1 = rangeMinimumQuery(low1, low2);
+        return len1 >= maxLen || len1 + rangeMinimumQuery(low1 + len1 + 1, low2 + len1 + 1) >= maxLen;
     }
 public:
-    void prepare(const string &input) {
-        s = input;
+    void prepare(string &&input) {
+        s = move(input);
         createSuffixArray();
         generateLCPArray();
-        /*for(int n : suffixArr){
-            cout << n << " ";
-        }
-        cout << "lcp:\n";
-        for(int n : lcpArr){
-            cout << n << " ";
-        }
-        cout << "\n";
-        for(int n : reversedArr){
-            cout << n << " ";
-        }
-        cout << "\n";*/
-
         generateLookup();
     }
     
@@ -226,7 +206,7 @@ int main() {
     cin >> input;
     cin >> n;
     Solution solution;
-    solution.prepare(input);
+    solution.prepare(move(input));
     
     ofstream out("output.txt");
 
