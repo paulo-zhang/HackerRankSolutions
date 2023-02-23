@@ -7,7 +7,7 @@
 #include <fstream>
 
 using namespace std;
-
+// Problem: https://www.hackerrank.com/contests/code-cpp-may-2015/challenges/almost-equal-strings
 class Solution{
     struct RankNode{int first, second, index;};
     string s;// The original string.
@@ -16,11 +16,14 @@ class Solution{
     // The LCP (Longest Common Prefix) array is an array of size 'N' (size of string 'S') where lcpArr[i], for 'i' from 0 to N - 1, contains lengths of the longest common prefix between the suffixes SUF[i] and SUF[i+1].
     vector<int> lcpArr; 
     vector<vector<int>> lookup; // Sparse Table Algorithm. https://www.geeksforgeeks.org/range-minimum-query-for-static-array/
-    // Build suffix array using the result of position 2i-1 to sort position 2i: O(n * Log2n). Optimize to O(n * Logn) with radix sort which uses counting sort to achieve O(Logn).
+    // Build suffix array using the result of position 2i-1 to sort position 2i: O(n * Log2n). 
+    // We first sort all suffixes according to the first character, then according to the first 2 characters, then first 4 characters, and so on.
+    // Optimize to O(n * Logn) with radix sort which uses counting sort to achieve O(Logn).
     // https://www.geeksforgeeks.org/suffix-array-set-2-a-nlognlogn-algorithm/
     void createSuffixArray(){
         // Helper rank array.
         vector<RankNode> rank(s.size());
+        reversedArr.resize(rank.size());
         
         // Assign position 0, 1.
         for(int i = 0; i < s.size() - 1; i++){
@@ -37,8 +40,9 @@ class Solution{
         // Sort position 0, 1.
         sortRank(rank);
         
-        // Sort for every 2^n element starting from 2^2.
-        for(int k = 2; k < s.size(); k *= 2){
+        // At this point, all suffixes are sorted according to first
+        // 2 characters.  Let us sort suffixes according to first 4 characters, then first 8 and so on.
+        for(int k = 4; k < 2 * s.size(); k *= 2){
             assignNewRank(rank);
             // Assign position k to second ranking index.
             assignCharacterRank(rank, k);
@@ -46,22 +50,17 @@ class Solution{
             sortRank(rank);
         }
         
-        reversedArr.resize(rank.size());
+        // Copy result.
         for(int i = 0; i < rank.size(); i++){
             suffixArr.push_back(rank[i].index);
-            reversedArr[rank[i].index] = i;
         }
     }
     
-    // Assign character k's rank to 'second'.
+    // IMPORTANT: When we assign the next rank for k, we assign the next k/2 sorted string's rank to k string's rank, not the k character's rank.
     void assignCharacterRank(vector<RankNode>& rank, int k){
-        for(int i = 0; i < s.size(); i++){
-            if(rank[i].index + k < s.size()){
-                rank[i].second = s[rank[i].index + k] - 'a';// The k charater of suffixArr[i].
-            }
-            else{
-                rank[i].second = -1;// k is out of rank of s.
-            }
+        for(int i = 0; i < rank.size(); i++){
+            int next = rank[i].index + k / 2;
+            rank[i].second = (next < s.size()) ? rank[reversedArr[next]].first : -1;
         }
     }
     
@@ -74,18 +73,23 @@ class Solution{
             
             return r1.second < r2.second;
         });
+
+        // Maintain reversed array.
+        for(int i = 0; i < rank.size(); i++){
+            reversedArr[rank[i].index] = i;
+        }
     }
     
     // Assign new rank. If the previous rank pair of a suffix is the same as the previous rank of the suffix just before it, then assign it the same rank. Otherwise, assign a rank of the previous suffix plus one. 
     void assignNewRank(vector<RankNode>& rank){
-        int first = rank[0].first;
+        int preRank = rank[0].first;
         rank[0].first = 0;
         for(int i = 1; i < rank.size(); i++){
-            if(first == rank[i].first && rank[i - 1].second == rank[i].second){
+            if(preRank == rank[i].first && rank[i - 1].second == rank[i].second){
                 rank[i].first = rank[i - 1].first;
             }
             else{
-                first = rank[i].first;
+                preRank = rank[i].first;
                 rank[i].first = rank[i - 1].first + 1;
             }
         }
@@ -96,7 +100,8 @@ class Solution{
         lcpArr.resize(reversedArr.size());
         
         for(int i = 0; i < reversedArr.size(); ++ i){
-            if(reversedArr[i] + 1 >= suffixArr.size()){
+            int index = reversedArr[i];
+            if(index + 1 >= suffixArr.size()){
                 lcpArr.back() = -1; 
                 continue;
             }
@@ -104,8 +109,9 @@ class Solution{
             int len = (i == 0 ? 0 : lcpArr[reversedArr[i - 1]] - 1);
             if(len < 0) len = 0;
 
-            while(len < s.size() - i && len < s.size() - suffixArr[reversedArr[i] + 1]){
-                if(s[len + i] == s[len + suffixArr[reversedArr[i] + 1]]){
+            int next = suffixArr[index + 1];
+            while(len < + i < s.size() && len + next < s.size()){
+                if(s[len + i] == s[len + next]){
                     len ++;
                 }
                 else{
@@ -113,7 +119,8 @@ class Solution{
                 }
             }
 
-            lcpArr[reversedArr[i]] = len;
+            // cout << "lcp: " << s.substr(i) << ", " << s.substr(next) << ": " << len << "\n";
+            lcpArr[index] = len;
         }
         
         lcpArr.pop_back(); // The last one is -1;
@@ -143,6 +150,7 @@ class Solution{
         }
         
         index2 --;// The lcp of i and i + 1 suffix is saved in lcpArr[i], no need to check lcpArr[i + 1].
+        // cout <<"RMQ: " << index1 << "-" << index2 << ": ";
         int minVal = INT_MAX;
         while(index1 <= index2){
             // index2 = i + 2 ^ j - 1;
@@ -151,42 +159,34 @@ class Solution{
             index1 += (1 << j); // Next start: i + 2 ^ j.
         }
         
-        // cout <<"RMQ: " << index1 << "-" << index2 << ": " << minVal << "\n";
+        // cout << minVal << "\n";
         return minVal;
     }
     
     int commonPrefixLength(int low1, int high1, int low2, int high2){
         if(low1 > high1 || low2 > high2) return 0;
         
-        int maxLen = min(high1 - low1 + 1, high2 - low2 + 1);// The max length is the len of the smaller string.
-        if(low1 == low2) return maxLen; // Same suffix start.
+        if(low1 == low2) return high1 - low1 + 1; // Same suffix start.
         
         int index1 = reversedArr[low1], index2 = reversedArr[low2];// Get the suffix array index.
-        
-        return min(maxLen, rangeMinimumQuery(index1, index2));
+        return rangeMinimumQuery(index1, index2);
     }
     
-    int maxMatchedLength(int low1, int high1, int low2, int high2){
-        // Match from 0.
+    bool isSimilar(int low1, int high1, int low2, int high2){
+        int maxLen = min(high1 - low1 + 1, high2 - low2 + 1) - 1;
+        
         int len1 = commonPrefixLength(low1, high1, low2, high2);
-        len1 += commonPrefixLength(low1 + len1, high1, low2 + len1, high2);
-        
-        // Match from 1.
-        int len2 = commonPrefixLength(low1 + 1, high1, low2, high2);
-        int len3 = commonPrefixLength(low1, high1, low2 + 1, high2);
-        
-        // cout << "maxMatched: " << len1 << ", " << len2 << ", " << len3 << "\n";
-        return max(len1, max(len2, len3));
+        return len1 >= maxLen || len1 + commonPrefixLength(low1 + len1 + 1, high1, low2 + len1 + 1, high2) >= maxLen;
     }
 public:
-    void prepare(const string &input){
+    void prepare(const string &input) {
         s = input;
         createSuffixArray();
         generateLCPArray();
         /*for(int n : suffixArr){
             cout << n << " ";
         }
-        cout << "\n";
+        cout << "lcp:\n";
         for(int n : lcpArr){
             cout << n << " ";
         }
@@ -211,9 +211,7 @@ public:
             return "SIMILAR"; // Same start position, same suffix strings.
         }
         
-        int maxLen = min(high1 - low1 + 1, high2 - low2 + 1);
-        int matchedLen = maxMatchedLength(low1, high1, low2, high2);
-        if(matchedLen + 1 >= maxLen){
+        if(isSimilar(low1, high1, low2, high2)){
             return "SIMILAR"; // Only one letter is different.
         }
         

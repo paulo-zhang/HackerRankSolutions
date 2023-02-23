@@ -3,5 +3,8 @@
         "args": [
             "<", "../input01.txt"
         ]
+    },
+    "files.associations": {
+        "type_traits": "cpp"
     }
 }
